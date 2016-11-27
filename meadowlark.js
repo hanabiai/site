@@ -1,8 +1,6 @@
 var express = require('express');
 var app = express();
-var fortunes = [
-    "a", "b", "c", "d", "e"
-];
+var fortune = require('./lib/fortune.js');
 
 //set handlebars view engine
 var handlebars = require('express-handlebars').create({defaultLayout:'main'});
@@ -18,8 +16,7 @@ app.get('/', function(req, res){
 
 //about page
 app.get('/about', function(req, res){
-    var randomFortune = fortunes[Math.floor(Math.random() * fortunes.length)];
-    res.render('about', { fortune : randomFortune });
+    res.render('about', { fortune : fortune.getFortune() });
 });
 
 //use static middleware
