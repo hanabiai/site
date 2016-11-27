@@ -1,0 +1,6 @@
+#ignore package from npm installed package
+node_modules
+
+#else
+.DS_Store
+*~
