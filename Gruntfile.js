@@ -17,7 +17,8 @@ module.exports = function(grunt){
             qa: [ 'Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js'],
         },
         exec: {
-            linkchecker: { cmd:'linkchecker http://localhost:3000'}
+            options : { port: 3000 },
+            linkchecker: { cmd:'linkchecker http://localhost:' + port }
         },
     });
     //register task
