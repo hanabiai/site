@@ -4,7 +4,7 @@
   "description": "Meadowlark Travel co.ltd.",
   "main": "meadowlark.js",
   "scripts": {
-    "test": "jshint"
+    "test": "grunt"
   },
   "author": "",
   "license": "ISC",
@@ -13,7 +13,9 @@
     "express-handlebars": "^3.0.0"
   },
   "devDependencies": {
-    "chai": "^3.5.0",    
+    "chai": "^3.5.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-jshint": "^1.1.0",
     "mocha": "^3.2.0"
   }
 }
