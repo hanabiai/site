@@ -1,7 +1,8 @@
 module.exports = function(grunt){
     //load plugin
     [
-        'grunt-contrib-jshint'
+        'grunt-contrib-jshint',
+        'grunt-mocha-test',
     ].forEach(function(task){
         grunt.loadNpmTasks(task);
     });
@@ -10,10 +11,16 @@ module.exports = function(grunt){
     grunt.initConfig({
         jshint: {
             app: ['meadowlark.js', 'public/js/**/*.js', 'lib/**/*.js'],
-            qa: ['Gruntfile.js', 'qa/**/*.js'],
+            qa: ['Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js'],
         },
+        mochaTest: {
+            test: {
+                src: 'qa/tests-*.js',
+                options: { ui: 'tdd'},
+            }
+        }
     });
 
     //register task
-    grunt.registerTask('default', ['jshint']);
+    grunt.registerTask('default', ['jshint', 'mochaTest']);
 };

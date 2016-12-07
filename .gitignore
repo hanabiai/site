@@ -1,5 +1,7 @@
 #ignore package from npm installed package
 node_modules
+#certificate file for cookie secret 
+credentials.js
 
 #else
 .DS_Store

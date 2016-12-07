@@ -9,13 +9,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.15.2",
+    "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
-    "express-handlebars": "^3.0.0"
+    "express-handlebars": "^3.0.0",
+    "express-session": "^1.14.2",
+    "formidable": "^1.0.17",
+    "nodemailer": "^2.6.4"
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "grunt": "^1.0.1",
+    "grunt": "^1.0.0",
     "grunt-contrib-jshint": "^1.1.0",
+    "grunt-mocha-test": "^0.13.2",
     "mocha": "^3.2.0"
   }
 }

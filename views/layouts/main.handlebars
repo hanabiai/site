@@ -1,15 +1,33 @@
 <!doctype html>
 <html>
     <head>
-        <title>Meadowlark Travel</title>
+        <title>Meadowlark Travel</title>        
+        <link rel="stylesheet" href="/vendor/bootstrap/bootstrap.min.css">
+        <link rel="stylesheet" href="/vendor/bootstrap/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="/css/site.css">
+        {{!--head section block--}}
+        {{{_sections.head}}}
+        {{!--test block--}}
         {{#if showTests}}
             <link rel="stylesheet" href="/vendor/mocha.css">
-        {{/if}}
-        <script src="/vendor/jquery.min.js"></script>
+        {{/if}}        
     </head>
-    <body>
-        <header><img alt="Meadowlark Travel Logo" src="/img/logo.png"></header>
-        {{{body}}}
+    <body>        
+        <div class="container">
+            <header><img alt="Meadowlark Travel Logo" src="/img/logo.png"></header>
+            {{#if flash}}
+                <div class="alert alert-dismissible alert-{{flash.type}}">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <strong>{{flash.intro}}</strong> {{{flash.message}}}
+                </div>
+            {{/if}}            
+            {{{body}}}
+            <footer>&copy; {{copyrightYear}} Meadowlark Travel</footer>           
+        </div>        
+        {{!--jquery section block--}}
+        <script src="/vendor/jquery.min.js"></script>
+        {{{_sections.jquery}}}
+        {{!--test block--}}
         {{#if showTests}}
             <div id="mocha"></div>
             <script src="/vendor/mocha.js"></script>
@@ -24,5 +42,7 @@
             {{/if}}
             <script>mocha.run();</script>
         {{/if}}
+
+        <script src="/vendor/bootstrap/bootstrap.min.js"></script>
     </body>
 </html>
