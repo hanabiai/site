@@ -1,4 +1,4 @@
-var weatherInfo = require('../lib/weather.js');
+var weatherInfo = require('../lib/mock-weather.js');
 var assert = require('chai').assert;
 
 suite('Weather Underground test', function(){

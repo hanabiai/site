@@ -1,11 +1,13 @@
 var express = require('express');
 var app = express();
-var fortune = require('./lib/fortune.js');
-var weatherInfo = require('./lib/weather.js');
 var credentials = require('./credentials.js');
+var fortune = require('./lib/fortune.js');
+var weatherInfo = require('./lib/mock-weather.js');
+var NewsletterSignup = require('./lib/mock-newsletter.js');
+var Product = require('./lib/mock-product.js');
 var cartValidation = require('./lib/cart-validation.js');
 var formidable = require('formidable');
-var nodemailer = require('nodemailer');
+var emailService = require('./lib/email.js')(credentials);
 var handlebars = require('express-handlebars').create({
     defaultLayout:'main',
     helpers: {
@@ -16,14 +18,8 @@ var handlebars = require('express-handlebars').create({
         }
     }
 });
+
 var VALID_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
-var mailTransport = nodemailer.createTransport('SMTP', {
-    service: 'Naver',
-    auth: {
-        user: credentials.naver.user,
-        pass: credentials.naver.password,
-    }
-});
 
 //set app
 app
@@ -52,7 +48,9 @@ app
         res.locals.flash = req.session.flash;
         delete req.session.flash;  
         next();
-    });
+    })
+    .use(cartValidation.checkWaivers)
+    .use(cartValidation.checkGuestCounts);
 
 //HTTP Request : GET
 app    
@@ -64,12 +62,6 @@ app
             fortune : fortune.getFortune(),
             pageTestScript : '/qa/tests-about.js' 
         });
-    })
-    .get('/tours/hood-river', function(req, res){   
-        res.render('tours/hood-river');
-    })
-    .get('/tours/oregon-coast', function(req, res){ 
-        res.render('tours/oregon-coast');
     })
     .get('/tours/request-group-rate', function(req, res){
         res.render('tours/request-group-rate');
@@ -105,16 +97,32 @@ app
             year: now.getFullYear(), 
             month: now.getMonth()
         });
+    })
+    .get('/tours/:tour', function(req, res, next){
+        Product.findOne({ category: 'tour', slug: req.params.tour }, function(err, tour){
+            if(err) return next(err);
+            if(!tour) return next();
+            res.render('tour', { tour: tour });
+        });
+    })
+    .get('/adventures/:subcat/:name', function(req, res, next){
+        Product.findOne({ category: 'adventure', slug: req.params.subcat + '/' + req.params.name  }, function(err, adventure){
+            if(err) return next(err);
+            if(!adventure) return next();
+            res.render('adventure', { adventure: adventure });
+        });
+    })
+    .get('/cart', function(req, res){
+        var cart = req.session.cart || (req.session.cart = []);
+        res.render('cart', { cart: cart });
+    })
+    .get('/cart/checkout', function(req, res){
+        var cart = req.session.cart;
+        if(!cart) next();
+        res.render('cart-checkout');
     });
 
 //HTTP Request : POST
-// for now, mocking newsletter signup object:
-function NewsletterSignup(){
-}
-NewsletterSignup.prototype.save = function(cb){
-	cb();
-};
-
 app
     .post('/process', function(req, res){
         if(req.xhr || req.accepts('json,html') === 'json'){
@@ -166,12 +174,41 @@ app
             };
             return res.redirect(303, '/newsletter/archive');
         });
+    })
+    .post('/cart/add', function(req, res, next){
+        var cart = req.session.cart || (req.session.cart = { items: [] });
+        Product.findOne({ sku: req.body.sku }, function(err, product){
+            if(err) return next(err);
+            if(!product) return next(new Error('Unknown product SKU: ' + req.body.sku));
+            cart.items.push({
+                product: product,
+                guests: req.body.guests || 0,
+            });
+            res.redirect(303, '/cart');
+        });
+    })
+    .post('/cart/checkout', function(req, res){
+        var cart = req.session.cart;
+        if(!cart) next(new Error('Cart does not exist.'));
+        var name = req.body.fieldName || '';
+        var email = req.body.fieldEmail || '';
+        //check email validation
+        if(!email.match(VALID_EMAIL_REGEX)) return res.next(new Error('Invalid email address'));
+        //set random cart ID
+        cart.number = Math.random().toString().replace(/^0\.0*/, '');
+        cart.billing = {
+            name: name,
+            email: email,
+        };
+        res.render('email/cart-thank-you', { layout: null, cart: cart }, function(err, html){
+            if(err) console.log('error in email template.');
+            emailService.send(cart.billing.email, 'Thank you for booking your trip with Meadowlark Travel!', html);
+        });
+        res.render('cart-thank-you', { cart: cart });
     });
 
 //use middleware for 404, 500 error page
 app
-    .use(cartValidation.checkWaivers)
-    .use(cartValidation.checkGuestCounts)
     .use(function(req, res, next){    
         res.status(404).render('404');
     })
