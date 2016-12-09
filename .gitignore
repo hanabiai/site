@@ -2,7 +2,8 @@
 node_modules
 #certificate file for cookie secret 
 credentials.js
-
+#Verify SMTP connection configuration
+qa/tests-smtp-connection.js
 #else
 .DS_Store
 *~
