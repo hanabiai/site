@@ -1,34 +1,92 @@
-var express = require('express');
-var app = express();
-var credentials = require('./credentials.js');
-var fortune = require('./lib/fortune.js');
-var weatherInfo = require('./lib/mock-weather.js');
-var NewsletterSignup = require('./lib/mock-newsletter.js');
-var Product = require('./lib/mock-product.js');
-var cartValidation = require('./lib/cart-validation.js');
-var formidable = require('formidable');
-var emailService = require('./lib/email.js')(credentials);
-var handlebars = require('express-handlebars').create({
-    defaultLayout:'main',
-    helpers: {
-        section: function(name, options){
-            if(!this._sections) this._sections = {};
-            this._sections[name] = options.fn(this);
-            return null;
+var http = require('http'),
+    express = require('express'),
+    app = express(),
+    credentials = require('./credentials.js'),
+    fortune = require('./lib/fortune.js'),
+    weatherInfo = require('./lib/mock-weather.js'),
+    NewsletterSignup = require('./lib/mock-newsletter.js'),
+    Product = require('./lib/mock-product.js'),
+    cartValidation = require('./lib/cart-validation.js'),
+    formidable = require('formidable'),
+    emailService = require('./lib/email.js')(credentials),
+    handlebars = require('express-handlebars').create({
+        defaultLayout:'main',
+        helpers: {
+            section: function(name, options){
+                if(!this._sections) this._sections = {};
+                this._sections[name] = options.fn(this);
+                return null;
+            }
         }
-    }
-});
+    });
 
 var VALID_EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
-//set app
+// set app
 app
     .engine('handlebars', handlebars.engine)
     .set('view engine', 'handlebars')
     .set('port', process.env.PORT || 3000)
     .set('view cache', false);
 
-//use middleware
+// use domains for better error handling
+app.use(function(req, res, next){
+    // create a domain for this request
+    var domain = require('domain').create();
+    // handle errors on this domain
+    domain.on('error', function(err){
+        console.error('DOMAIN Error caught\n', err.stack);
+        try {
+            // failsafe shutdown in 5 seconds
+            setTimeout(function(){
+                console.error('Failsafe shutdown.');
+                process.exit(1);
+            }, 5000);
+
+            // disconnect from the cluster
+            var worker = require('cluster').worker;
+            if(worker) worker.disconnect();
+
+            // stop taking new requests
+            server.close();
+
+            try {
+                // attempt to use Express error route
+                next(err);
+            } catch(e) {
+                // if Express error route failed, try
+                // plain Node response
+                console.error('Express error mechanism failed.\n', e.stack);
+                res.statusCode = 500;
+                res.setHeader('content-type', 'text/plain');
+                res.end('Server error.');
+            }
+        } catch(e){
+            console.error('Unable to send 500 response.\n', e.stack);
+        }
+    });
+
+    // add the request and response objects to the domain
+    domain.add(req);
+    domain.add(res);
+
+    // execute the rest of the request chain in the domain
+    domain.run(next);
+});
+
+// configure for logging
+switch(app.get('env')){
+    case 'development':
+        app.use(require('morgan')('dev'));
+        break;
+    case 'production':
+        app.use(require('express-logger')({
+            path: __dirname + '/log/requests.log'
+        }));
+        break;
+}
+
+// use middleware
 app
     .use(express.static(__dirname + '/public'))     //use middleware for static files path
     .use(require('body-parser').urlencoded({ extended: true }))
@@ -46,13 +104,21 @@ app
         res.locals.partials.weatherContext = weatherInfo.getWeatherData();
         //set local variable for flash message
         res.locals.flash = req.session.flash;
-        delete req.session.flash;  
+        delete req.session.flash;
+        
         next();
     })
     .use(cartValidation.checkWaivers)
     .use(cartValidation.checkGuestCounts);
 
-//HTTP Request : GET
+// check worker
+app.use(function(req, res, next){
+    var cluster = require('cluster');
+    if(cluster.isWorker) console.log('Worker %d received request', cluster.worker.id);
+    next();
+});
+
+// HTTP Request : GET
 app    
     .get('/', function(req, res){                   
         res.render('home');
@@ -120,9 +186,14 @@ app
         var cart = req.session.cart;
         if(!cart) next();
         res.render('cart-checkout');
+    })
+    .get('/epic-fail', function(req, res){
+        process.nextTick(function(){
+            throw new Error('kaboom!');
+        });
     });
 
-//HTTP Request : POST
+// HTTP Request : POST
 app
     .post('/process', function(req, res){
         if(req.xhr || req.accepts('json,html') === 'json'){
@@ -207,7 +278,7 @@ app
         res.render('cart-thank-you', { cart: cart });
     });
 
-//use middleware for 404, 500 error page
+// use middleware for 404, 500 error page
 app
     .use(function(req, res, next){    
         res.status(404).render('404');
@@ -217,9 +288,20 @@ app
         res.status(500).render('500');
     });
 
-//app start
-app.listen(app.get('port'), function(){
-    console.log('Express started on localhost:' + app.get('port'));
-});
+var server;
+function startServer(){
+    server = http.createServer(app).listen(app.get('port'), function(){
+        console.log('Express started in ' + app.get('env') + ' mode on http://localhost:' + app.get('port') + ';\n' +
+            'press ctrl-C to quit');
+    });
+}
+
+// if require.main is module, application run directly after starting app server
+// else application imported as a module via "require": export function to create server
+if(require.main === module){    
+    startServer();
+} else {    
+    module.exports = startServer;
+}
 
 if(app.thing === null) console.log('bleat!');
