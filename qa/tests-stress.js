@@ -1,5 +1,5 @@
 var loadtest = require('loadtest');
-var expect = require('chai').expect;
+var assert = require('chai').assert;
 
 suite('Stress tests', function(){
     test('Homepage should handle 50 requests in a second', function(done){
@@ -9,8 +9,8 @@ suite('Stress tests', function(){
             maxRequests:50
         };
         loadtest.loadTest(options, function(err, result){
-            expect(!err);
-            expect(result.totalTimeSeconds < 1);
+            assert(!err, 'err none');
+            assert(result.totalTimeSeconds < 1, 'total elapsed time should be less than 1');
             done();
         });
     });

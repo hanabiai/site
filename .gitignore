@@ -4,8 +4,9 @@ node_modules
 credentials.js
 #Verify SMTP connection configuration
 qa/tests-smtp-connection.js
-#log
-*.log
+#log and binary data
+log/
+data/
 #else
 .DS_Store
 *~
