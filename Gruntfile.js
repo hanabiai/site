@@ -10,7 +10,7 @@ module.exports = function(grunt){
     //set plugin
     grunt.initConfig({
         jshint: {
-            app: ['meadowlark.js', 'public/js/**/*.js', 'lib/**/*.js'],
+            app: ['meadowlark.js', 'public/js/**/*.js', 'lib/**/*.js', 'handlers/**/*.js'],
             qa: ['Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js'],
         },
         mochaTest: {

@@ -20,7 +20,8 @@
     "loadtest": "^2.2.1",
     "mongoose": "^4.7.2",
     "morgan": "^1.7.0",
-    "nodemailer": "^2.6.4"
+    "nodemailer": "^2.6.4",
+    "vhost": "^3.0.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
