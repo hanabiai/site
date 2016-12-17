@@ -5,7 +5,8 @@
 var http = require('http'),
     express = require('express'),
     app = express(),
-    fs = require('fs'),    
+    fs = require('fs'),
+    vhost = require('vhost'),   
     credentials = require('./credentials.js'),    
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
@@ -23,10 +24,9 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 app.set('view cache', false);
+app.use('/api', require('cors')());
 
-/* ==========================================================================
 
-   ========================================================================== */
    
 // use domains for better error handling
 app.use(function(req, res, next){
@@ -92,9 +92,7 @@ app.use(function(req, res, next){
     next();
 });
 
-/* ==========================================================================
 
-   ========================================================================== */
 
 var cookieParser = require('cookie-parser')(credentials.cookieSecret),
     expressSession = require('express-session'),
@@ -119,9 +117,7 @@ switch(app.get('env')){
         throw new Error('Unknown execution environment: ' + app.get('env'));
 }
 
-/* ==========================================================================
 
-   ========================================================================== */
 
 // use middleware
 app
@@ -150,18 +146,79 @@ app
 // create "admin" subdomain...
 // this should appear before all other routes
 var admin = express.Router();
-app.use(require('vhost')('admin.*', admin));
+app.use(vhost('admin.*', admin));
 
 // create admin routes; 
 admin.get('/', function(req, res){
 	res.render('admin/home');
 });
-admin.get('/users', function(req, res){
-	res.render('admin/users');
-});
 
 // add routes
 require('./routes.js')(app);
+
+
+
+// API configuration
+var apiOptions = {
+    context: '',
+    //domain: require('domain').create(),
+};
+
+// api
+var Attraction = require('./models/attraction.js');
+var rest = require('connect-rest').create(apiOptions);
+
+// link API into pipeline
+app.use(vhost('api.*', rest.processRequest()));
+
+rest.get('/attractions', function(req, content, cb){
+    Attraction.find({ approved: true }, function(err, attractions){
+        if(err) return cb({error: 'internal error'});
+        cb(null, attractions.map(function(doc){
+            return {
+                name: doc.name,
+                id: doc._id,
+                description: doc.description,
+                location: doc.location,
+            };
+        }));
+    });
+});
+
+rest.get('/attraction/:id', function(req, content, cb){
+    Attraction.findById(req.params.id, function(err, doc){
+        if(err) return cb({error: 'Unable to retrieve attraction'});
+        cb(null, {
+            name: doc.name,
+            id: doc._id,
+            description: doc.description,
+            location: doc.location,
+        });
+    });
+});
+
+rest.post('/attraction', function(req, content, cb){    
+    var attraction = new Attraction({
+        name: req.body.name,
+        description: req.body.description,
+        location: { lat: req.body.lat, lng: req.body.lng },
+        history: {
+            event: 'created',
+            email: req.body.email,
+            date: new Date(),
+        },
+        approved: false,
+    });
+    attraction.save(function(err, doc){
+        if(err) return cb('error: Unabe to add attraction.');
+        cb(null, { id: doc._id });
+    });
+});
+
+
+
+
+
 
 // add support for auto views
 var autoViews = {};
@@ -188,9 +245,7 @@ app.use(function(err, req, res, next){
     res.status(500).render('500');
 });
 
-/* ==========================================================================
 
-   ========================================================================== */
 
 // create server instance
 var server;

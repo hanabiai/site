@@ -41,7 +41,7 @@ module.exports = {
     },
     
     notifyInSeason: function(req, res){
-        res.render('notify-me-when-in-season', { sku: req.query.sku });
+        res.render('notify-in-season', { sku: req.query.sku });
     },
     
     notifyInSeasonProcessPost: function(req, res){

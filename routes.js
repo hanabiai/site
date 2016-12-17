@@ -4,7 +4,8 @@ var main = require('./handlers/main.js'),
 	cart = require('./handlers/cart.js'),	
 	contact = require('./handlers/contact.js'),
 	samples = require('./handlers/sample.js'),
-    cartValidation = require('./lib/cart-validation.js');
+    cartValidation = require('./lib/cart-validation.js'),
+    attraction = require('./handlers/api-attraction.js');
 
 module.exports = function(app){
     
@@ -25,8 +26,8 @@ module.exports = function(app){
         // vacation routes
         .get('/vacation/:vacation', vacation.detail)
         .get('/vacations', vacation.list)
-        .get('/notify-me-when-in-season', vacation.notifyInSeason)
-        .post('/notify-me-when-in-season', vacation.notifyInSeasonProcessPost)
+        .get('/notify-in-season', vacation.notifyInSeason)
+        .post('/notify-in-season', vacation.notifyInSeasonProcessPost)
 
         // shopping cart routes
         .get('/cart', cart.middleware, cartValidation.checkWaivers, cartValidation.checkGuestCounts, cart.home)
@@ -50,5 +51,11 @@ module.exports = function(app){
         .get('/data/nursery-rhyme', samples.nurseryRhymeData)
         .get('/epic-fail', samples.epicFail)
         .post('/process', samples.processPost)
+
+        // express apis - attraction
+        .get('/api/attractions', attraction.list)
+        .get('/api/attraction/:id', attraction.detail)
+        .post('/api/attraction', attraction.processPost)
+                
     ;
 };
