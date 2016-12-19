@@ -7,7 +7,7 @@ var http = require('http'),
     app = express(),
     fs = require('fs'),
     vhost = require('vhost'),   
-    credentials = require('./credentials.js'),    
+    credentials = require('./credentials.js'),     
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
         helpers: {
@@ -15,6 +15,9 @@ var http = require('http'),
                 if(!this._sections) this._sections = {};
                 this._sections[name] = options.fn(this);
                 return null;
+            },
+            static: function(name){
+                return require('./lib/static.js').map(name);
             }
         }
     });
@@ -24,7 +27,6 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 3000);
 app.set('view cache', false);
-app.use('/api', require('cors')());
 
 
    
@@ -94,11 +96,13 @@ app.use(function(req, res, next){
 
 
 
+
 var cookieParser = require('cookie-parser')(credentials.cookieSecret),
     expressSession = require('express-session'),
     mongoose = require('mongoose'),
     MongoStore = require('connect-mongo')(expressSession),         
-    weatherInfo = require('./lib/mock-weather.js');
+    weatherInfo = require('./lib/mock-weather.js'),
+    static = require('./lib/static.js').map;
 
 // configure database for mongoose
 var opts = {
@@ -117,8 +121,6 @@ switch(app.get('env')){
         throw new Error('Unknown execution environment: ' + app.get('env'));
 }
 
-
-
 // use middleware
 app
     .use(express.static(__dirname + '/public'))     //use middleware for static files path
@@ -129,19 +131,39 @@ app
         saveUninitialized: false,
         secret: credentials.cookieSecret,
         store: new MongoStore({ mongooseConnection: mongoose.connection })
-    }))
-    .use(function(req, res, next){                  
-        //set local variable for test with filtering HTTP request
-        res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
-        //set local variable for partial view
-        if(!res.locals.partials) res.locals.partials = {};    
-        res.locals.partials.weatherContext = weatherInfo.getWeatherData();
-        //set local variable for flash message
-        res.locals.flash = req.session.flash;
-        delete req.session.flash;
-        
-        next();
-    });
+    }));
+
+// set local variable for test with filtering HTTP request
+app.use(function(req, res, next){                          
+    res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+    next();
+});
+// set local variable for partial view
+app.use(function(req, res, next){        
+    if(!res.locals.partials) res.locals.partials = {};    
+    res.locals.partials.weatherContext = weatherInfo.getWeatherData();
+    next();
+});
+//set local variable for flash message
+app.use(function(req, res, next){
+    res.locals.flash = req.session.flash;
+    delete req.session.flash;        
+    next();
+});
+// set header logo image
+app.use(function(req, res, next){
+    var now = new Date();
+    res.locals.logoImage = (now.getMonth() == 11 && now.getDate() == 19) ? 
+        static('/img/logo_bud_clark.png') : static('/img/logo.png');
+    next();
+});
+// middleware to provide cart data for header
+app.use(function(req, res, next) {
+    var cart = req.session.cart;
+    res.locals.cartItems = cart && cart.items ? cart.items.length : 0;
+    next();
+});
+
 
 // create "admin" subdomain...
 // this should appear before all other routes

@@ -2,6 +2,19 @@ var Vacation = require('../models/vacation.js'),
     emailService = require('../lib/email.js')(require('../credentials.js')),
     utility = require('../lib/utility.js');
 
+function addToCart(sku, guests, req, res, next){    
+	var cart = req.session.cart || (req.session.cart = { items: [] });
+    Vacation.findOne({ sku: sku }, function(err, vacation){
+        if(err) return next(err);
+        if(!vacation) return next(new Error('Unknown vacation SKU: ' + sku));
+        cart.items.push({
+            vacation: vacation,
+            guests: guests || 1,
+        });        
+        res.redirect(303, '/cart');
+    });
+}
+
 module.exports = {
     // deserializes cart items from the database
     middleware: function(req, res, next){
@@ -25,29 +38,13 @@ module.exports = {
     },
     
     addProcessGet: function(req, res, next){
-        var cart = req.session.cart || (req.session.cart = { items: [] });
-        Vacation.findOne({ sku: req.query.sku }, function(err, vacation){
-            if(err) return next(err);
-            if(!vacation) return next(new Error('Unknown vacation SKU: ' + req.query.sku));
-            cart.items.push({
-                vacation: vacation,
-                guests: req.body.guests || 1,
-            });
-            res.redirect(303, '/cart');
-        });
+        // HTTP GET Request - req.query
+        addToCart(req.query.sku, req.query.guests, req, res, next);
     },
     
     addProcessPost: function(req, res, next){
-        var cart = req.session.cart || (req.session.cart = { items: [] });
-        Vacation.findOne({ sku: req.body.sku }, function(err, vacation){
-            if(err) return next(err);
-            if(!vacation) return next(new Error('Unknown vacation SKU: ' + req.body.sku));
-            cart.items.push({
-                vacation: vacation,
-                guests: req.body.guests || 0,
-            });
-            res.redirect(303, '/cart');
-        });
+        // HTTP POST request - req.body
+        addToCart(req.body.sku, req.body.guests, req, res, next);
     },
     
     checkout: function(req, res, next){

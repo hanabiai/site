@@ -5,6 +5,7 @@ var main = require('./handlers/main.js'),
 	contact = require('./handlers/contact.js'),
 	samples = require('./handlers/sample.js'),
     cartValidation = require('./lib/cart-validation.js'),
+    cors = require('cors'),
     attraction = require('./handlers/api-attraction.js');
 
 module.exports = function(app){
@@ -53,9 +54,9 @@ module.exports = function(app){
         .post('/process', samples.processPost)
 
         // express apis - attraction
-        .get('/api/attractions', attraction.list)
-        .get('/api/attraction/:id', attraction.detail)
-        .post('/api/attraction', attraction.processPost)
+        .get('/api/attractions', cors(), attraction.list)
+        .get('/api/attraction/:id', cors(), attraction.detail)
+        .post('/api/attraction', cors(), attraction.processPost)
                 
     ;
 };

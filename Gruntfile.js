@@ -3,12 +3,17 @@ module.exports = function(grunt){
     [
         'grunt-contrib-jshint',
         'grunt-mocha-test',
+        'grunt-contrib-less',        
+        'grunt-contrib-cssmin',
+        'grunt-contrib-uglify',
+        'grunt-hashres',
     ].forEach(function(task){
         grunt.loadNpmTasks(task);
     });
 
     //set plugin
     grunt.initConfig({
+        // default task
         jshint: {
             app: ['meadowlark.js', 'routes.js', 'public/js/**/*.js', 'lib/**/*.js', 'handlers/**/*.js'],
             qa: ['Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js'],
@@ -18,9 +23,59 @@ module.exports = function(grunt){
                 src: 'qa/tests-*.js',
                 options: { ui: 'tdd'},
             }
+        },
+        // static task for bundling, minifying, and fingerprinting
+        less: {
+            development: {
+                options: {
+                    customFunctions: {
+                        static: function(lessObject, name){
+                            return 'url("' + require('./lib/static.js').map(name.value) + '")';
+                        }
+                    }
+                },
+                files: {
+                    'public/css/main.css': 'less/main.less',
+                    'public/css/cart.css': 'less/cart.less',
+                }
+            }
+        },
+        cssmin: {
+            combine: {
+                files: {
+                    'public/css/meadowlark.css': ['public/css/**/*.css', '!public/css/meadowlark*.css']
+                }
+            },
+            minify: {
+                src: 'public/css/meadowlark.css',
+                dest: 'public/css/meadowlark.min.css',
+            }
+        },
+        uglify: {
+            all: {
+                files: {
+                    'public/js/meadowlark.min.js': ['public/js/**/*.js', '!public/js/meadowlark*.js']
+                }
+            }
+        },
+        hashres: {
+            options: {
+                fileNameFormat: '${name}.${hash}.${ext}'
+            },
+            all: {
+                src: [
+                    'public/js/meadowlark.min.js',
+                    'public/css/meadowlark.min.css',
+                ],
+                dest: [
+                    'views/layouts/main.handlebars',
+                    //'config.js',
+                ]
+            }
         }
     });
 
     //register task
     grunt.registerTask('default', ['jshint', 'mochaTest']);
+    grunt.registerTask('static', ['less', 'cssmin', 'uglify', 'hashres']);
 };
