@@ -24,8 +24,8 @@ suite('API tests', function(){
             restler.get(base + '/api/attraction/' + doc.id).on('success', function(doc){
                 assert.strictEqual(doc.name, attraction.name);
                 assert.strictEqual(doc.description, attraction.description);                
+                done();
             });
-            done();
         });
     });
 });

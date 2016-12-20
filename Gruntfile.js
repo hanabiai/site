@@ -15,6 +15,9 @@ module.exports = function(grunt){
     grunt.initConfig({
         // default task
         jshint: {
+            options: {
+                ignores: ['public/js/meadowlark*.js'],
+            },
             app: ['meadowlark.js', 'routes.js', 'public/js/**/*.js', 'lib/**/*.js', 'handlers/**/*.js'],
             qa: ['Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js'],
         },
@@ -51,7 +54,7 @@ module.exports = function(grunt){
                 dest: 'public/css/meadowlark.min.css',
             }
         },
-        uglify: {
+        uglify: {            
             all: {
                 files: {
                     'public/js/meadowlark.min.js': ['public/js/**/*.js', '!public/js/meadowlark*.js']

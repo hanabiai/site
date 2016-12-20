@@ -1,12 +1,14 @@
-#ignore package from npm installed package
+# ignore package from npm installed package.
 node_modules
-#certificate file for cookie secret 
+# certificate file for cookie secret.
 credentials.js
-#Verify SMTP connection configuration
+# API tests
+qa/tests-api.js
+# Verify SMTP connection configuration.
 qa/tests-smtp-connection.js
-#log and binary data
+# log and binary data
 log/
 data/
-#else
+# etc.
 .DS_Store
 *~

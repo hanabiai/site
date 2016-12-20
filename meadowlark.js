@@ -179,6 +179,8 @@ admin.get('/', function(req, res){
 require('./routes.js')(app);
 
 
+require('./controllers/customer.js').registerRoutes(app);
+
 
 // API configuration
 var apiOptions = {
