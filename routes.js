@@ -1,12 +1,25 @@
-var main = require('./handlers/main.js'),
-    contest = require('./handlers/contest.js'),
-	vacation = require('./handlers/vacation.js'),
-	cart = require('./handlers/cart.js'),	
-	contact = require('./handlers/contact.js'),
-	samples = require('./handlers/sample.js'),
+var main = require('./controllers/main.js'),
+    contest = require('./controllers/contest.js'),
+	vacation = require('./controllers/vacation.js'),
+	cart = require('./controllers/cart.js'),	
+	contact = require('./controllers/contact.js'),
+	samples = require('./controllers/sample.js'),
+    attraction = require('./controllers/api-attraction.js'),
+    customer = require('./controllers/customer.js'),
+    auth = require('./controllers/auth.js'),
     cartValidation = require('./lib/cart-validation.js'),
-    cors = require('cors'),
-    attraction = require('./handlers/api-attraction.js');
+    cors = require('cors');
+
+    var whitelist = ['https://localhost'];
+    var corsOptionsDelegate = function(req, callback){
+        var corsOptions;
+        if(whitelist.indexOf(req.header('Origin')) !== -1){
+            corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response 
+        }else{
+            corsOptions = { origin: false }; // disable CORS for this request 
+        }
+        callback(null, corsOptions); // callback expects two parameters: error and options 
+    };    
 
 module.exports = function(app){
     
@@ -53,10 +66,26 @@ module.exports = function(app){
         .get('/epic-fail', samples.epicFail)
         .post('/process', samples.processPost)
 
+        // customer
+        .get('/customer/register', customer.register)
+		.post('/customer/register', customer.processRegister)
+        .get('/customer/:id', customer.home)
+        .get('/customer/:id/preferences', customer.preferences)
+        .get('/orders/:id', customer.orders)
+        .post('/customer/:id/update', customer.ajaxUpdate)
+
+        // auth
+
+        .get('/unauthorized', auth.unauthorized)
+        .get('/account', auth.helpers.allow('customer,employee'), auth.account)
+        .get('/account/order-history', auth.helpers.customerOnly, auth.orderHistory)
+        .get('/account/email-prefs', auth.helpers.customerOnly, auth.emailPrefs)        
+        .get('/sales', auth.helpers.employeeOnly, auth.sales)
+
         // express apis - attraction
-        .get('/api/attractions', cors(), attraction.list)
-        .get('/api/attraction/:id', cors(), attraction.detail)
-        .post('/api/attraction', cors(), attraction.processPost)
+        .get('/api/attractions', cors(corsOptionsDelegate), attraction.list)
+        .get('/api/attraction/:id', cors(corsOptionsDelegate), attraction.detail)
+        .post('/api/attraction', cors(corsOptionsDelegate), attraction.processPost)
                 
     ;
 };

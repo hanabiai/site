@@ -1,4 +1,23 @@
 <h1>Welcome to Meadowlark Travel</h1>
+
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1044557302356802',
+      xfbml      : true,
+      version    : 'v2.8'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
 <h2>Check out our featured tour packages:</h2>
 <ul>
 	<li><a href="/vacation/hood-river-day-trip">Hood River Day Trip</a></li>
@@ -6,3 +25,10 @@
 	<li><a href="/vacation/rock-climbing-in-bend">Rock Climbing in Bend</a></li>
 </ul>
 {{> weather}}
+
+<div
+  class="fb-like"
+  data-share="true"
+  data-width="450"
+  data-show-faces="true">
+</div>

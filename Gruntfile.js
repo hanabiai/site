@@ -18,7 +18,7 @@ module.exports = function(grunt){
             options: {
                 ignores: ['public/js/meadowlark*.js'],
             },
-            app: ['meadowlark.js', 'routes.js', 'public/js/**/*.js', 'lib/**/*.js', 'handlers/**/*.js'],
+            app: ['meadowlark.js', 'routes.js', 'public/js/**/*.js', 'lib/**/*.js', 'controllers/**/*.js'],
             qa: ['Gruntfile.js', 'public/qa/**/*.js', 'qa/**/*.js'],
         },
         mochaTest: {

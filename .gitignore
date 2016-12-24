@@ -2,11 +2,11 @@
 node_modules
 # certificate file for cookie secret.
 credentials.js
-# API tests
-qa/tests-api.js
-# Verify SMTP connection configuration.
-qa/tests-smtp-connection.js
-# log and binary data
+# tests files
+qa/
+# ssl files
+ssl/
+# ssl,log and binary data
 log/
 data/
 # etc.

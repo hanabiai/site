@@ -2,7 +2,7 @@
 
    ========================================================================== */
 
-var http = require('http'),
+var https = require('https'),
     express = require('express'),
     app = express(),
     fs = require('fs'),
@@ -25,7 +25,7 @@ var http = require('http'),
 // set app
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 443);
 app.set('view cache', false);
 
 
@@ -97,8 +97,7 @@ app.use(function(req, res, next){
 
 
 
-var cookieParser = require('cookie-parser')(credentials.cookieSecret),
-    expressSession = require('express-session'),
+var expressSession = require('express-session'),    
     mongoose = require('mongoose'),
     MongoStore = require('connect-mongo')(expressSession),         
     weatherInfo = require('./lib/mock-weather.js'),
@@ -110,11 +109,13 @@ var opts = {
         socketOptions: { keepAlive: 1 }
     }
 };
+
+mongoose.Promise = global.Promise;
 switch(app.get('env')){
-    case 'development':
+    case 'development':        
         mongoose.connect(credentials.mongo.development.connectionString, opts);
         break;
-    case 'production':
+    case 'production':        
         mongoose.connect(credentials.mongo.production.connectionString, opts);
         break;
     default:
@@ -125,13 +126,20 @@ switch(app.get('env')){
 app
     .use(express.static(__dirname + '/public'))     //use middleware for static files path
     .use(require('body-parser').urlencoded({ extended: true }))
-    .use(cookieParser)
+    .use(require('cookie-parser')(credentials.cookieSecret))
     .use(expressSession({
         resave: false,
         saveUninitialized: false,
         secret: credentials.cookieSecret,
         store: new MongoStore({ mongooseConnection: mongoose.connection })
-    }));
+    }))
+    .use(require('csurf')());
+
+// set CSRF token
+app.use(function(req, res, next){
+    res.locals._csrfToken = req.csrfToken();
+    next();
+});
 
 // set local variable for test with filtering HTTP request
 app.use(function(req, res, next){                          
@@ -175,11 +183,24 @@ admin.get('/', function(req, res){
 	res.render('admin/home');
 });
 
+
+// authentication
+var auth = require('./lib/auth.js')(app, {
+    baseUrl: process.env.BASE_URL,
+    providers: credentials.authProviders,
+    successRedirect: '/account',
+    failureRedirect: '/unauthorized',
+});
+// auth.init() links in Passport middleware:
+auth.init();
+
+// specify our auth routes:
+auth.registerRoutes();
+
+
 // add routes
 require('./routes.js')(app);
 
-
-require('./controllers/customer.js').registerRoutes(app);
 
 
 // API configuration
@@ -244,21 +265,21 @@ rest.post('/attraction', function(req, content, cb){
 
 
 
-// add support for auto views
-var autoViews = {};
-app.use(function(req,res,next){
-    var path = req.path.toLowerCase();  
-    // check cache; if it's there, render the view
-    if(autoViews[path]) return res.render(autoViews[path]);
-    // if it's not in the cache, see if there's
-    // a .handlebars file that matches
-    if(fs.existsSync(__dirname + '/views' + path + '.handlebars')){
-        autoViews[path] = path.replace(/^\//, '');
-        return res.render(autoViews[path]);
-    }
-    // no view found; pass on to 404 handler
-    next();
-});
+// // currently commented to skip employee's next('route') to 404 handler 
+// // add support for auto views
+// var autoViews = {};
+// app.use(function(req,res,next){
+//     var path = req.path.toLowerCase();  
+//     // check cache; if it's there, render the view
+//     if(autoViews[path]) return res.render(autoViews[path]);
+//     // if it's not in the cache, see if there's a .handlebars file that matches
+//     if(fs.existsSync(__dirname + '/views' + path + '.handlebars')){
+//         autoViews[path] = path.replace(/^\//, '');
+//         return res.render(autoViews[path]);
+//     }
+//     // no view found; pass on to 404 handler
+//     next();
+// });
 
 // use middleware for 404, 500 error page
 app.use(function(req, res, next){    
@@ -273,9 +294,23 @@ app.use(function(err, req, res, next){
 
 // create server instance
 var server;
+
 function startServer(){
-    server = http.createServer(app).listen(app.get('port'), function(){
-        console.log('Express started in ' + app.get('env') + ' mode on http://localhost:' + app.get('port') + ';\n' +
+    var keyFile = __dirname + '/ssl/meadowlark.pem',
+		certFile = __dirname + '/ssl/meadowlark.crt';
+	if(!fs.existsSync(keyFile) || !fs.existsSync(certFile)) {
+		console.error('\nERROR: One or both of the SSL cert or key are missing:\n' +
+			'\t' + keyFile + '\n' +
+			'\t' + certFile + '\n' +
+			'must generate these files using openssl.\n');
+		process.exit(1);
+	}
+	var serverOptions = {
+		key: fs.readFileSync(__dirname + '/ssl/meadowlark.pem'),
+		cert: fs.readFileSync(__dirname + '/ssl/meadowlark.crt'),
+	};
+    server = https.createServer(serverOptions, app).listen(app.get('port'), function(){
+        console.log('Express started in ' + app.get('env') + ' mode on port:' + app.get('port') + ' using HTTPS.\n' +
             'press ctrl-C to quit');
     });
 }
