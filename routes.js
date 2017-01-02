@@ -7,19 +7,9 @@ var main = require('./controllers/main.js'),
     attraction = require('./controllers/api-attraction.js'),
     customer = require('./controllers/customer.js'),
     auth = require('./controllers/auth.js'),
+    dealer = require('./controllers/dealer.js'),
     cartValidation = require('./lib/cart-validation.js'),
-    cors = require('cors');
-
-    var whitelist = ['https://localhost'];
-    var corsOptionsDelegate = function(req, callback){
-        var corsOptions;
-        if(whitelist.indexOf(req.header('Origin')) !== -1){
-            corsOptions = { origin: true }; // reflect (enable) the requested origin in the CORS response 
-        }else{
-            corsOptions = { origin: false }; // disable CORS for this request 
-        }
-        callback(null, corsOptions); // callback expects two parameters: error and options 
-    };    
+    cors = require('cors');    
 
 module.exports = function(app){
     
@@ -83,9 +73,12 @@ module.exports = function(app){
         .get('/sales', auth.helpers.employeeOnly, auth.sales)
 
         // express apis - attraction
-        .get('/api/attractions', cors(corsOptionsDelegate), attraction.list)
-        .get('/api/attraction/:id', cors(corsOptionsDelegate), attraction.detail)
-        .post('/api/attraction', cors(corsOptionsDelegate), attraction.processPost)
+        .get('/api/attractions', cors(), attraction.list)
+        .get('/api/attraction/:id', cors(), attraction.detail)
+        .post('/api/attraction', cors(), attraction.processPost)
+
+        // dealer
+        .get('/dealer', dealer.home)
                 
     ;
 };

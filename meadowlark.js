@@ -6,7 +6,8 @@ var https = require('https'),
     express = require('express'),
     app = express(),
     fs = require('fs'),
-    vhost = require('vhost'),   
+    vhost = require('vhost'),
+    Q = require('q'),   
     credentials = require('./credentials.js'),     
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
@@ -26,7 +27,7 @@ var https = require('https'),
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 443);
-app.set('view cache', false);
+//app.set('view cache', false);
 
 
    
@@ -99,9 +100,15 @@ app.use(function(req, res, next){
 
 var expressSession = require('express-session'),    
     mongoose = require('mongoose'),
-    MongoStore = require('connect-mongo')(expressSession),         
-    weatherInfo = require('./lib/mock-weather.js'),
-    static = require('./lib/static.js').map;
+    MongoStore = require('connect-mongo')(expressSession),             
+    static = require('./lib/static.js').map,
+    weatherInfo = require('./lib/weather.js')(),
+    twitter = require('./lib/twitter.js')({
+        consumerKey: credentials.twitter[process.env.NODE_ENV || 'development'].consumerKey,
+        consumerSecret: credentials.twitter[process.env.NODE_ENV || 'development'].consumerSecret,
+    }),    
+    geocode = require('./lib/geocode.js')();
+
 
 // configure database for mongoose
 var opts = {
@@ -141,24 +148,18 @@ app.use(function(req, res, next){
     next();
 });
 
-// set local variable for test with filtering HTTP request
+// middleware to set 'showTests' context property if the querystring contains test=1
 app.use(function(req, res, next){                          
     res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
     next();
 });
-// set local variable for partial view
-app.use(function(req, res, next){        
-    if(!res.locals.partials) res.locals.partials = {};    
-    res.locals.partials.weatherContext = weatherInfo.getWeatherData();
-    next();
-});
-//set local variable for flash message
+// middleware to set flash message
 app.use(function(req, res, next){
     res.locals.flash = req.session.flash;
     delete req.session.flash;        
     next();
 });
-// set header logo image
+// middleware to handle logo image easter eggs
 app.use(function(req, res, next){
     var now = new Date();
     res.locals.logoImage = (now.getMonth() == 11 && now.getDate() == 19) ? 
@@ -169,6 +170,25 @@ app.use(function(req, res, next){
 app.use(function(req, res, next) {
     var cart = req.session.cart;
     res.locals.cartItems = cart && cart.items ? cart.items.length : 0;
+    next();
+});
+// middleware to add weather data to context
+app.use(function(req, res, next){        
+    if(!res.locals.partials) res.locals.partials = {};
+    res.locals.partials.weatherContext = weatherInfo.getWeatherData();
+    next();
+});
+// mmiddleware to add top tweets to context
+app.use(function(req, res, next) {
+	res.locals.topTweets = twitter.getTopTweets();
+    next();
+});
+// middleware to set google geocode
+app.use(function(req, res, next){
+    geocode.refresh(function(refreshInterval){
+        // call self after refresh interval
+        setTimeout(geocode.refresh, refreshInterval);
+    });
     next();
 });
 
@@ -198,6 +218,12 @@ auth.init();
 auth.registerRoutes();
 
 
+
+
+
+
+
+
 // add routes
 require('./routes.js')(app);
 
@@ -212,11 +238,14 @@ var apiOptions = {
 // api
 var Attraction = require('./models/attraction.js');
 var rest = require('connect-rest').create(apiOptions);
+var cors = require('cors');
+
+
 
 // link API into pipeline
 app.use(vhost('api.*', rest.processRequest()));
 
-rest.get('/attractions', function(req, content, cb){
+rest.get('/attractions', cors(), function(req, content, cb){
     Attraction.find({ approved: true }, function(err, attractions){
         if(err) return cb({error: 'internal error'});
         cb(null, attractions.map(function(doc){
@@ -230,7 +259,7 @@ rest.get('/attractions', function(req, content, cb){
     });
 });
 
-rest.get('/attraction/:id', function(req, content, cb){
+rest.get('/attraction/:id', cors(), function(req, content, cb){
     Attraction.findById(req.params.id, function(err, doc){
         if(err) return cb({error: 'Unable to retrieve attraction'});
         cb(null, {
@@ -242,7 +271,7 @@ rest.get('/attraction/:id', function(req, content, cb){
     });
 });
 
-rest.post('/attraction', function(req, content, cb){    
+rest.post('/attraction', cors(), function(req, content, cb){    
     var attraction = new Attraction({
         name: req.body.name,
         description: req.body.description,

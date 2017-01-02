@@ -1,4 +1,9 @@
 language: node_js
-node_js: "stable"
+node_js: stable
 before_script: npm install -g grunt-cli
 services: mongodb
+deploy:
+    provider: heroku
+    app: meadowlarktravelco
+    api_key:
+        secure: BXIgr4JQyOfSIFetN0y6o/3aG3zp0xfHc55BFxmMNQxvZ9m5JsXPMP+JluQ33ns5LDSCBRZ5hPcfpNgoEkYupx4IP8JYug0j0w/bvZf2Q8UZBBXBdEpKEVn8H30mozhmdKmUrArFJ103zlDvRCJpVImGzwuILRdHyZfaHwGDqeHvgV3EaWCtSewfI5N89UOgri/OhVS9o5gR9g/7QiAXDvoclhk6PUMtOKAwFnrPC1xhtSutcpvaNrjKMgKW2hIwguLl2npv27yAXyhmm2ufSJSXt2+n1DH44hNbUFftSNt0XK3wIsU5SxdKcnyLkWqoJNTQuHrVQwKGAO0ErYfcAQWUo3IYIGC6UGqaAs06Sh0wkTvSZR6W2dNDViE8YvOLfJ4zsB2txSPMOLiH6t1mOKWLbXeSm2viGq2/gaZqtiKRqSjO8jE/AML/Q7cpyuG1+YLLld2lXPdMloKWHJaY8X2RViXeQHyfKz4zN3Ob4fVDUMDTAeEidJQPNQIgk0s8Sq+zaOJfnOYJirxS3r62C8n3ZK2YEf2acM/TgZWulPrkKPRAsy7Q2SQ16ZPPkM69SAn6OKZYy7KgH3qZROuIRU0+eD9ZDKAeUFH+gLOSN2gYqai8p2ClfFv5PFgZCswvQKmyiLibFiHmxVs6p6117U5sfbAuO4abZSVQ/CVmeJE=

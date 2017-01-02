@@ -17,16 +17,16 @@
 
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="{{static '/css/meadowlark.min.c85d0098.css'}}">
+        <link rel="stylesheet" href="{{static '/css/meadowlark.min.8ef5ccdc.css'}}">
     </head>
     <body>        
         <div class="container">
             <header>
-                <div class="row">
-                    <div class="col-sm-4">
+                <div class="table row">
+                    <div class="cell col-sm-4">
                         <img src="{{logoImage}}" alt="Meadowlark Travel Logo">
                     </div>
-                    <div class="col-sm-2 pull-right">
+                    <div class="cell col-sm-2 pull-right">
                         {{! The following represents a lot of code duplication, so we will probably want to
                             change this in the future }}
                         {{#if cartItems}}
@@ -45,7 +45,7 @@
                 </div>
             {{/if}}
 
-            {{{body}}}
+            {{{body}}}            
             
             <footer>&copy; {{copyrightYear}} Meadowlark Travel</footer>           
         </div>
@@ -80,6 +80,6 @@
         {{/if}}
 
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="{{static '/js/meadowlark.min.288725e9.js'}}"></script>
+        <script src="{{static '/js/meadowlark.min.3bfeec47.js'}}"></script>
     </body>
 </html>
