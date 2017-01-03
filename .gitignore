@@ -2,6 +2,8 @@
 node_modules
 # certificate file for cookie secret.
 credentials.js
+# heroku Local .env file
+.env
 # tests files
 qa/
 # ssl files

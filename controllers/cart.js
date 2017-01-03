@@ -1,5 +1,5 @@
 var Vacation = require('../models/vacation.js'),
-    emailService = require('../lib/email.js')(require('../credentials.js')),
+    emailService = require('../lib/email.js')(),
     utility = require('../lib/utility.js');
 
 function addToCart(sku, guests, req, res, next){    

@@ -2,13 +2,12 @@
 
    ========================================================================== */
 
-var https = require('https'),
+var http = require('http'),
     express = require('express'),
     app = express(),
     fs = require('fs'),
     vhost = require('vhost'),
     Q = require('q'),   
-    credentials = require('./credentials.js'),     
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
         helpers: {
@@ -26,7 +25,7 @@ var https = require('https'),
 // set app
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
-app.set('port', process.env.PORT || 443);
+app.set('port', process.env.PORT || 5000);
 //app.set('view cache', false);
 
 
@@ -104,8 +103,8 @@ var expressSession = require('express-session'),
     static = require('./lib/static.js').map,
     weatherInfo = require('./lib/weather.js')(),
     twitter = require('./lib/twitter.js')({
-        consumerKey: credentials.twitter[process.env.NODE_ENV || 'development'].consumerKey,
-        consumerSecret: credentials.twitter[process.env.NODE_ENV || 'development'].consumerSecret,
+        consumerKey: process.env.TWITTER_API_CONSUMERKEY,
+        consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
     }),    
     geocode = require('./lib/geocode.js')();
 
@@ -120,10 +119,10 @@ var opts = {
 mongoose.Promise = global.Promise;
 switch(app.get('env')){
     case 'development':        
-        mongoose.connect(credentials.mongo.development.connectionString, opts);
+        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
         break;
     case 'production':        
-        mongoose.connect(credentials.mongo.production.connectionString, opts);
+        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
         break;
     default:
         throw new Error('Unknown execution environment: ' + app.get('env'));
@@ -133,11 +132,11 @@ switch(app.get('env')){
 app
     .use(express.static(__dirname + '/public'))     //use middleware for static files path
     .use(require('body-parser').urlencoded({ extended: true }))
-    .use(require('cookie-parser')(credentials.cookieSecret))
+    .use(require('cookie-parser')(process.env.COOKIE_SECRET))
     .use(expressSession({
         resave: false,
         saveUninitialized: false,
-        secret: credentials.cookieSecret,
+        secret: process.env.COOKIE_SECRET,
         store: new MongoStore({ mongooseConnection: mongoose.connection })
     }))
     .use(require('csurf')());
@@ -206,8 +205,7 @@ admin.get('/', function(req, res){
 
 // authentication
 var auth = require('./lib/auth.js')(app, {
-    baseUrl: process.env.BASE_URL,
-    providers: credentials.authProviders,
+    baseUrl: process.env.BASE_URL,    
     successRedirect: '/account',
     failureRedirect: '/unauthorized',
 });
@@ -324,24 +322,13 @@ app.use(function(err, req, res, next){
 // create server instance
 var server;
 
-function startServer(){
-    var keyFile = __dirname + '/ssl/meadowlark.pem',
-		certFile = __dirname + '/ssl/meadowlark.crt';
-	if(!fs.existsSync(keyFile) || !fs.existsSync(certFile)) {
-		console.error('\nERROR: One or both of the SSL cert or key are missing:\n' +
-			'\t' + keyFile + '\n' +
-			'\t' + certFile + '\n' +
-			'must generate these files using openssl.\n');
-		process.exit(1);
-	}
-	var serverOptions = {
-		key: fs.readFileSync(__dirname + '/ssl/meadowlark.pem'),
-		cert: fs.readFileSync(__dirname + '/ssl/meadowlark.crt'),
-	};
-    server = https.createServer(serverOptions, app).listen(app.get('port'), function(){
-        console.log('Express started in ' + app.get('env') + ' mode on port:' + app.get('port') + ' using HTTPS.\n' +
+function startServer(){    	
+	
+    server = http.createServer(app).listen(app.get('port'), function(){
+        console.log('Express started in ' + app.get('env') + ' mode on port:' + app.get('port') + ' using HTTP.\n' +
             'press ctrl-C to quit');
     });
+
 }
 
 // if require.main is module, application run directly after starting app server
