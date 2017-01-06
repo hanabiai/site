@@ -11,6 +11,7 @@ module.exports = {
         Vacation.findOne({ slug: req.params.vacation }, function(err, vacation){
             if(err) return next(err);
             if(!vacation) return next();
+            vacation.mainImgPath = '/img/vacation/' + req.params.vacation + '.jpg';
             res.render('vacation', { vacation: vacation });
         });
     },

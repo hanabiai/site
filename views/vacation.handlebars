@@ -2,7 +2,10 @@
 
 <div class="table">
     <div class="cell content">
-        <form class="form-horizontal newsletterForm" role="form"action="/cart/add" method="POST">
+        
+        <img src="{{static vacation.mainImgPath}}" alt="{{vacation.name}}">
+        <hr>
+        <form class="form-horizontal newsletterForm" role="form" action="/cart/add" method="POST">
             <input type="hidden" name="_csrf" value="{{_csrfToken}}">
             <input type="hidden" name="sku" value="{{vacation.sku}}">
             <div class="form-group">

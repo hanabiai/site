@@ -4,6 +4,7 @@
 {{/section}}
 <h1>Request Group Rate</h1>
 <form class="form-horizontal newsletterForm" role="form" action="/tours/request-group-rate" method="POST">
+    <input type="hidden" name="_csrf" value="{{_csrfToken}}">
     <input type="hidden" name="referer">
     <div class="form-group">
         <label for="fieldName" class="control-label">Name:</label>

@@ -27,6 +27,7 @@ a.currency {
 }
 .sidebar {
   font-size: 12px;
+  vertical-align: top;
 }
 .twitter-tweet {
   font-size: 12px;

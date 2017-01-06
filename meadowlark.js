@@ -1,13 +1,12 @@
 /* ==========================================================================
-
+    app's environment configuration
    ========================================================================== */
-
 var http = require('http'),
     express = require('express'),
     app = express(),
-    fs = require('fs'),
-    vhost = require('vhost'),
-    Q = require('q'),   
+    fs = require('fs'),    
+    Q = require('q'),
+    path = require('path'),
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
         helpers: {
@@ -18,18 +17,46 @@ var http = require('http'),
             },
             static: function(name){
                 return require('./lib/static.js').map(name);
-            }
+            },
         }
     });
 
-// set app
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 app.set('port', process.env.PORT || 5000);
-//app.set('view cache', false);
 
+var expressSession = require('express-session'),    
+    mongoose = require('mongoose'),
+    MongoStore = require('connect-mongo')(expressSession),             
+    static = require('./lib/static.js').map,
+    weatherInfo = require('./lib/weather.js')(),
+    twitter = require('./lib/twitter.js')({
+        consumerKey: process.env.TWITTER_API_CONSUMERKEY,
+        consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
+    }),    
+    geocode = require('./lib/geocode.js')();
 
-   
+// configure database for mongoose
+var opts = {
+    server: {
+        socketOptions: { keepAlive: 1 }
+    }
+};
+mongoose.Promise = global.Promise;
+switch(app.get('env')){
+    case 'development':        
+        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
+        break;
+    case 'production':        
+        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
+        break;
+    default:
+        throw new Error('Unknown execution environment: ' + app.get('env'));
+}
+
+/* ==========================================================================
+    app's middleware configuration
+   ========================================================================== */
 // use domains for better error handling
 app.use(function(req, res, next){
     // create a domain for this request
@@ -76,14 +103,14 @@ app.use(function(req, res, next){
 });
 
 // configure for logging
-switch(app.get('env')){
-    case 'development':
-        //app.use(require('morgan')('dev'));
-        break;
+switch(app.get('env')){    
     case 'production':
         app.use(require('express-logger')({
             path: __dirname + '/log/requests.log'
         }));
+        break;
+    default: 
+        //app.use(require('morgan')('dev'));
         break;
 }
 
@@ -94,43 +121,8 @@ app.use(function(req, res, next){
     next();
 });
 
-
-
-
-var expressSession = require('express-session'),    
-    mongoose = require('mongoose'),
-    MongoStore = require('connect-mongo')(expressSession),             
-    static = require('./lib/static.js').map,
-    weatherInfo = require('./lib/weather.js')(),
-    twitter = require('./lib/twitter.js')({
-        consumerKey: process.env.TWITTER_API_CONSUMERKEY,
-        consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
-    }),    
-    geocode = require('./lib/geocode.js')();
-
-
-// configure database for mongoose
-var opts = {
-    server: {
-        socketOptions: { keepAlive: 1 }
-    }
-};
-
-mongoose.Promise = global.Promise;
-switch(app.get('env')){
-    case 'development':        
-        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
-        break;
-    case 'production':        
-        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
-        break;
-    default:
-        throw new Error('Unknown execution environment: ' + app.get('env'));
-}
-
-// use middleware
 app
-    .use(express.static(__dirname + '/public'))     //use middleware for static files path
+    .use(express.static(path.join(__dirname,'public'), { maxAge: 31536000000 }))
     .use(require('body-parser').urlencoded({ extended: true }))
     .use(require('cookie-parser')(process.env.COOKIE_SECRET))
     .use(expressSession({
@@ -139,70 +131,59 @@ app
         secret: process.env.COOKIE_SECRET,
         store: new MongoStore({ mongooseConnection: mongoose.connection })
     }))
-    .use(require('csurf')());
-
-// set CSRF token
-app.use(function(req, res, next){
-    res.locals._csrfToken = req.csrfToken();
-    next();
-});
-
-// middleware to set 'showTests' context property if the querystring contains test=1
-app.use(function(req, res, next){                          
-    res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
-    next();
-});
-// middleware to set flash message
-app.use(function(req, res, next){
-    res.locals.flash = req.session.flash;
-    delete req.session.flash;        
-    next();
-});
-// middleware to handle logo image easter eggs
-app.use(function(req, res, next){
-    var now = new Date();
-    res.locals.logoImage = (now.getMonth() == 11 && now.getDate() == 19) ? 
-        static('/img/logo_bud_clark.png') : static('/img/logo.png');
-    next();
-});
-// middleware to provide cart data for header
-app.use(function(req, res, next) {
-    var cart = req.session.cart;
-    res.locals.cartItems = cart && cart.items ? cart.items.length : 0;
-    next();
-});
-// middleware to add weather data to context
-app.use(function(req, res, next){        
-    if(!res.locals.partials) res.locals.partials = {};
-    res.locals.partials.weatherContext = weatherInfo.getWeatherData();
-    next();
-});
-// mmiddleware to add top tweets to context
-app.use(function(req, res, next) {
-	res.locals.topTweets = twitter.getTopTweets();
-    next();
-});
-// middleware to set google geocode
-app.use(function(req, res, next){
-    geocode.refresh(function(refreshInterval){
-        // call self after refresh interval
-        setTimeout(geocode.refresh, refreshInterval);
+    .use(require('csurf')())
+    // middleware to set '_csrfToken' context property
+    .use(function(req, res, next){
+        res.locals._csrfToken = req.csrfToken();
+        next();
+    })
+    // middleware to set 'showTests' context property if the querystring contains test=1
+    .use(function(req, res, next){                          
+        res.locals.showTests = app.get('env') !== 'production' && req.query.test === '1';
+        next();
+    })
+    // middleware to set flash message
+    .use(function(req, res, next){
+        res.locals.flash = req.session.flash;
+        delete req.session.flash;        
+        next();
+    })
+    // middleware to handle logo image easter eggs
+    .use(function(req, res, next){
+        var now = new Date();
+        res.locals.logoImage = (now.getMonth() == 11 && now.getDate() == 19) ? 
+            static('/img/logo_bud_clark.png') : static('/img/logo.png');
+        next();
+    })
+    // middleware to provide cart data for header
+    .use(function(req, res, next) {
+        var cart = req.session.cart;
+        res.locals.cartItems = cart && cart.items ? cart.items.length : 0;
+        next();
+    })
+    // middleware to add weather data to context
+    .use(function(req, res, next){        
+        if(!res.locals.partials) res.locals.partials = {};
+        res.locals.partials.weatherContext = weatherInfo.getWeatherData();
+        next();
+    })
+    // mmiddleware to add top tweets to context
+    .use(function(req, res, next) {
+        res.locals.topTweets = twitter.getTopTweets();
+        next();
+    })
+    // middleware to set google geocode
+    .use(function(req, res, next){
+        geocode.refresh(function(refreshInterval){
+            // call self after refresh interval
+            setTimeout(geocode.refresh, refreshInterval);
+        });
+        next();
     });
-    next();
-});
 
-
-// create "admin" subdomain...
-// this should appear before all other routes
-var admin = express.Router();
-app.use(vhost('admin.*', admin));
-
-// create admin routes; 
-admin.get('/', function(req, res){
-	res.render('admin/home');
-});
-
-
+/* ==========================================================================
+    app's routes configuration
+   ========================================================================== */
 // authentication
 var auth = require('./lib/auth.js')(app, {
     baseUrl: process.env.BASE_URL,    
@@ -212,113 +193,42 @@ var auth = require('./lib/auth.js')(app, {
 // auth.init() links in Passport middleware:
 auth.init();
 
-// specify our auth routes:
+// specify auth routes:
 auth.registerRoutes();
 
+// create "admin" subdomain...
+// this should appear before all other routes
+var vhost = require('vhost'),
+    adminRouter = express.Router(),
+    apiRouter = express.Router();
 
+app
+    .use(vhost('admin.*', adminRouter))
+    .use(vhost('api.*', apiRouter));
 
+// add routes for admin
+require('./routes-admin.js')(adminRouter);
 
+// add routes for api
+require('./routes-api.js')(apiRouter);
 
-
-
-
-// add routes
+// add routes for end-user
 require('./routes.js')(app);
 
 
-
-// API configuration
-var apiOptions = {
-    context: '',
-    //domain: require('domain').create(),
-};
-
-// api
-var Attraction = require('./models/attraction.js');
-var rest = require('connect-rest').create(apiOptions);
-var cors = require('cors');
-
-
-
-// link API into pipeline
-app.use(vhost('api.*', rest.processRequest()));
-
-rest.get('/attractions', cors(), function(req, content, cb){
-    Attraction.find({ approved: true }, function(err, attractions){
-        if(err) return cb({error: 'internal error'});
-        cb(null, attractions.map(function(doc){
-            return {
-                name: doc.name,
-                id: doc._id,
-                description: doc.description,
-                location: doc.location,
-            };
-        }));
-    });
-});
-
-rest.get('/attraction/:id', cors(), function(req, content, cb){
-    Attraction.findById(req.params.id, function(err, doc){
-        if(err) return cb({error: 'Unable to retrieve attraction'});
-        cb(null, {
-            name: doc.name,
-            id: doc._id,
-            description: doc.description,
-            location: doc.location,
-        });
-    });
-});
-
-rest.post('/attraction', cors(), function(req, content, cb){    
-    var attraction = new Attraction({
-        name: req.body.name,
-        description: req.body.description,
-        location: { lat: req.body.lat, lng: req.body.lng },
-        history: {
-            event: 'created',
-            email: req.body.email,
-            date: new Date(),
-        },
-        approved: false,
-    });
-    attraction.save(function(err, doc){
-        if(err) return cb('error: Unabe to add attraction.');
-        cb(null, { id: doc._id });
-    });
-});
-
-
-
-
-
-
-// // currently commented to skip employee's next('route') to 404 handler 
-// // add support for auto views
-// var autoViews = {};
-// app.use(function(req,res,next){
-//     var path = req.path.toLowerCase();  
-//     // check cache; if it's there, render the view
-//     if(autoViews[path]) return res.render(autoViews[path]);
-//     // if it's not in the cache, see if there's a .handlebars file that matches
-//     if(fs.existsSync(__dirname + '/views' + path + '.handlebars')){
-//         autoViews[path] = path.replace(/^\//, '');
-//         return res.render(autoViews[path]);
-//     }
-//     // no view found; pass on to 404 handler
-//     next();
-// });
-
 // use middleware for 404, 500 error page
-app.use(function(req, res, next){    
-    res.status(404).render('404');
-});
-app.use(function(err, req, res, next){
-    console.error(err.stack);
-    res.status(500).render('500');
-});
+app
+    .use(function(req, res, next){    
+        res.status(404).render('404');
+    })
+    .use(function(err, req, res, next){
+        console.error(err.stack);
+        res.status(500).render('500');
+    });
 
-
-
+/* ==========================================================================
+    app loading
+   ========================================================================== */
 // create server instance
 var server;
 

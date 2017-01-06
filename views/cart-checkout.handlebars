@@ -2,7 +2,7 @@
 <p>Please provide your email address so we can send you a confirmation of your order.</p>
 <div class="formContainer">
     <form class="form-horizontal newsletterForm" role="form" action="/cart/checkout" method="POST">
-        <input type="hidden" name="_csrf" value="{{csrf}}">
+        <input type="hidden" name="_csrf" value="{{_csrfToken}}">
         <div class="form-group">
             <label for="fieldName" class="col-sm-2 control-label">Name</label>
             <div class="col-sm-4">

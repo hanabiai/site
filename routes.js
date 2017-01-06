@@ -4,16 +4,14 @@ var main = require('./controllers/main.js'),
 	cart = require('./controllers/cart.js'),	
 	contact = require('./controllers/contact.js'),
 	samples = require('./controllers/sample.js'),
-    attraction = require('./controllers/api-attraction.js'),
     customer = require('./controllers/customer.js'),
     auth = require('./controllers/auth.js'),
     dealer = require('./controllers/dealer.js'),
-    cartValidation = require('./lib/cart-validation.js'),
-    cors = require('cors');    
+    cartValidation = require('./lib/cart-validation.js');
 
 module.exports = function(app){
     
-    app
+    app        
         // miscellaneous routes
         .get('/', main.home)
         .get('/about', main.about)
@@ -72,10 +70,7 @@ module.exports = function(app){
         .get('/account/email-prefs', auth.helpers.customerOnly, auth.emailPrefs)        
         .get('/sales', auth.helpers.employeeOnly, auth.sales)
 
-        // express apis - attraction
-        .get('/api/attractions', cors(), attraction.list)
-        .get('/api/attraction/:id', cors(), attraction.detail)
-        .post('/api/attraction', cors(), attraction.processPost)
+        
 
         // dealer
         .get('/dealer', dealer.home)

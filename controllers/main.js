@@ -2,7 +2,7 @@ var fortune = require('../lib/fortune.js'),
     NewsletterSignup = require('../lib/mock-newsletter.js'),
     utility = require('../lib/utility.js');
 
-module.exports = {
+module.exports = {    
 
     home: function(req, res){                   
         res.render('home');
@@ -16,9 +16,7 @@ module.exports = {
     },
     
     newsletter: function(req, res){
-        res.render('newsletter', {
-            csrf: 'CSRF token goes here'
-        });
+        res.render('newsletter');
     },
     
     newsletterProcessPost: function(req, res){

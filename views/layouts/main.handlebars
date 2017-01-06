@@ -17,9 +17,30 @@
 
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="{{static '/css/meadowlark.min.8ef5ccdc.css'}}">
+        <link rel="stylesheet" href="{{static '/css/meadowlark.min.d891305a.css'}}">
     </head>
-    <body>        
+    <body>
+        {{!--google analytics--}}
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-89951621-1', 'auto');
+            ga('send', 'pageview');
+        </script>
+
+        {{!--facebook like plug-in--}}
+        <div id="fb-root"></div>
+        <script>(function(d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[1];
+            if (d.getElementById(id)) return;
+            js = d.createElement(s); js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";
+            fjs.parentNode.insertBefore(js, fjs);
+            }(document, 'script', 'facebook-jssdk'));</script>
+
         <div class="container">
             <header>
                 <div class="table row">
@@ -30,9 +51,9 @@
                         {{! The following represents a lot of code duplication, so we will probably want to
                             change this in the future }}
                         {{#if cartItems}}
-                            <a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_full.png'}}" alt="Cart Empty"></a>
+                            <a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_full.png'}}" alt="Cart Contains {{cartItems}} Items"></a>
                         {{else}}
-                            <a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_empty.png'}}" alt="Cart Contains {{cartItems}} Items"></a>
+                            <a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_empty.png'}}" alt="Cart Empty"></a>
                         {{/if}}
                     </div>
                 </div>
@@ -45,11 +66,21 @@
                 </div>
             {{/if}}
 
-            <h3>This site is opened for privately testing MongoDB, Express.js, Angular.js, Node.js.</h3>
-            <h4>...not implemented completely, for now.</h4>
+            This site is opened for testing with personal purpose <b>MongoDB, Express, Angular, Node.js</b>
+            ... For now, under construction.
 
             {{{body}}}            
             
+            <hr>
+            <div 
+                class="fb-like" 
+                data-href="https://meadowlarktravelco.herokuapp.com/" 
+                data-layout="standard" 
+                data-action="like" 
+                data-size="small"
+                data-show-faces="false" 
+                data-share="true"></div>
+
             <footer>&copy; {{copyrightYear}} Meadowlark Travel</footer>           
         </div>
         
@@ -83,6 +114,6 @@
         {{/if}}
 
         <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="{{static '/js/meadowlark.min.3bfeec47.js'}}"></script>
+        <script src="{{static '/js/meadowlark.min.8340fa5d.js'}}"></script>
     </body>
 </html>
