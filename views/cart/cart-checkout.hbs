@@ -1,0 +1,26 @@
+<h1>Your Shopping Cart</h1>
+<p>Please provide your email address so we can send you a confirmation of your order.</p>
+<div class="formContainer">
+    <form class="form-horizontal" role="form" action="/cart/checkout" method="POST">
+        <input type="hidden" name="_csrf" value="{{_csrfToken}}">
+        <div class="form-group has-feedback">
+            <label for="fieldName" class="col-xs-2 control-label">Name</label>
+            <div class="col-xs-10">
+                <input type="text" class="form-control" id="fieldName" name="fieldName" placeholder="ur name" value="{{userName}}">
+            </div>
+        </div>
+        <div class="form-group has-feedback">
+            <label for="fieldEmail" class="col-xs-2 control-label">Email</label>
+            <div class="col-xs-10">
+                <input type="text" class="form-control" id="fieldEmail" name="fieldEmail" placeholder="ur email" aria-describedby="helpBlock" value="{{userEmail}}" required>
+                <span id="helpBlock" class="help-block">full email address</span>
+                <span class="glyphicon glyphicon-warning-sign form-control-feedback" aria-hidden="true"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-offset-2 col-xs-10">
+                <button type="submit" class="btn btn-primary">Checkout</button>
+            </div>
+        </div>
+    </form>
+</div>

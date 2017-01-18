@@ -1,6 +1,23 @@
 /* ==========================================================================
    cart styles
    ========================================================================== */
-div.cart {
-  border: solid 1px #ccc;
+.cart {
+  border: 1px #ccc;
+  border-style: solid none;
+}
+.cart .row {
+  border-top: solid 1px #ccc;
+  padding: 4px;
+}
+.cart .row:last-child {
+  border-bottom: solid 1px #ccc;
+}
+.cart .row:first-child > div {
+  font-weight: bold;
+}
+.cart .row:first-child {
+  background-color: #ddd;
+}
+.cart .row:nth-child(even) {
+  background-color: #eee;
 }

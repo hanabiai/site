@@ -1,0 +1,53 @@
+	<ul>
+    {{#each vacations}}
+    <li>
+        <div class="vacation">
+			<div class="pull-right">
+				<p><span class="price">{{price}}</span></p>
+			</div>
+            <a href="/vacation/{{slug}}"><h4>{{name}}</h4></a>
+            <p>{{description}}</p>            
+            {{#if inSeason}}                
+				<p><a href="/cart/add" data-action="cart-add" data-sku="{{sku}}" class="btn btn-primary">Add to cart</a></p>
+            {{else}}
+				<p>
+					<span class="outOfSeason">We're sorry this vacation is currently not in season</span><br>
+					<a href="/notify-in-season?sku={{sku}}">Notify me when this vacation is in season.</a>
+				</p>
+            {{/if}}
+        </div>
+    </li>
+    {{/each}}
+</ul>
+
+{{#section 'jquery'}}
+	<script>
+		$(document).ready(function() {
+			$('[data-action="cart-add"]').on('click', function() {
+				var $this = $(this);
+				$.get($this.attr('href'), { sku: $this.data('sku'), guests: 1 })
+					.done(function() {
+						// it would probably be better for cart.addItem to actually handle the AJAX call
+						cart.addItem($this.data('sku'));
+						$('<span class="badge">Vacation added!</span>')
+							.hide()
+							.insertAfter($this)
+							.fadeIn('fast')
+							.delay(1000)
+							.fadeOut('slow', function(){
+								$this.after('&nbsp;&nbsp;<a href="/cart" class="btn btn-info">Move to cart</a>');
+							});
+					})
+					.fail(function() {
+						$('<span class="badge">Error!  Please try again.</span>')
+							.hide()
+							.insertAfter($this)
+							.fadeIn('fast')
+							.delay(1000)
+							.fadeOut('slow');
+					});
+				return false;
+			});
+		});
+	</script>
+{{/section}}

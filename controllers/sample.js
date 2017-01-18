@@ -1,11 +1,11 @@
 module.exports = {
     
     jqueryTest: function(req, res){
-        res.render('jquery-test');
+        res.render('sample/jquery-test');
     },
     
     nurseryRhyme: function(req, res){
-        res.render('nursery-rhyme');
+        res.render('sample/nursery-rhyme');
     },
     
     nurseryRhymeData: function(req, res){

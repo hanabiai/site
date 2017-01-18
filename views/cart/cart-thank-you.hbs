@@ -1,0 +1,17 @@
+<h1>Thank you for booking!</h1>
+<div class="well">
+    <dl class="dl-horizontal">
+        <dt>Name</dt><dd>{{cart.billing.name}}</dd>    
+        <dt>Email</dt><dd>{{cart.billing.email}}</dd>
+        <dt>reservation Number</dt><dd>{{cart.number}}</dd>
+    </dl>
+</div>
+<a href="/vacation" class="btn btn-info">Move to vacation</a>
+
+{{#section 'jquery'}}
+    <script>
+        $(document).ready(function(){
+            if(cart.items.length) cart.clearItems();
+        });
+    </script>
+{{/section}}

@@ -2,7 +2,7 @@ var Customer = require('../models/customer.js');
 var customerViewModel = require('../viewModels/customer.js');
 
 // initialize orders
-require('../lib/mock-order.js')();
+require('../models/mock-order.js')();
 
 module.exports = {
     

@@ -1,5 +1,5 @@
 var cors = require('cors'),
-    attraction = require('./controllers/api-attraction.js');
+    attraction = require('../controllers/api-attraction.js');
 
 module.exports = function(apiRouter){
     apiRouter

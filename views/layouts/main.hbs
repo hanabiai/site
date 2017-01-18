@@ -17,7 +17,7 @@
 
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="{{static '/css/meadowlark.min.d891305a.css'}}">
+        <link rel="stylesheet" href="{{static '/css/meadowlark.min.f7ea0c59.css'}}">
     </head>
     <body>
         {{!--google analytics--}}
@@ -41,24 +41,30 @@
             fjs.parentNode.insertBefore(js, fjs);
             }(document, 'script', 'facebook-jssdk'));</script>
 
-        <div class="container">
-            <header>
-                <div class="table row">
-                    <div class="cell col-sm-4">
+        <header>
+            <div class="container-fluid">
+                <div class="row">
+                    {{#if user}}
+                        <div class="pull-right">welcome, {{user.name}} <a href="/logout" class="btn btn-default btn-xs">Logout</a></div>
+                    {{else}}
+                        <div class="pull-right"><a href="/login" class="btn btn-default btn-xs">Login</a></div>
+                    {{/if}}
+                </div>
+                <div class="row">
+                    <div class="pull-left">
                         <img src="{{logoImage}}" alt="Meadowlark Travel Logo">
                     </div>
-                    <div class="cell col-sm-2 pull-right">
-                        {{! The following represents a lot of code duplication, so we will probably want to
-                            change this in the future }}
-                        {{#if cartItems}}
-                            <a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_full.png'}}" alt="Cart Contains {{cartItems}} Items"></a>
-                        {{else}}
-                            <a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_empty.png'}}" alt="Cart Empty"></a>
-                        {{/if}}
-                    </div>
+                    {{! The following represents a lot of code duplication, so need to change this in the future }}
+                    {{#if cartItems}}
+                        <div class="pull-right"><a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_full.png'}}" alt="Cart Contains {{cartItems}} Items"></a></di>
+                    {{else}}
+                        <div class="pull-right"><a href="/cart"><img class="cartIcon" src="{{static '/img/shop/cart_empty.png'}}" alt="Cart Empty"></a></div>
+                    {{/if}}                    
                 </div>
-            </header>
+            </div>
+        </header>
 
+        <div class="container">
             {{#if flash}}
                 <div class="alert alert-dismissible alert-{{flash.type}}">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -69,20 +75,27 @@
             This site is opened for testing with personal purpose <b>MongoDB, Express, Angular, Node.js</b>
             ... For now, under construction.
 
-            {{{body}}}            
-            
-            <hr>
+            {{{body}}}
+
             <div 
-                class="fb-like" 
+                class="fb-like v-margin" 
                 data-href="https://meadowlarktravelco.herokuapp.com/" 
                 data-layout="standard" 
                 data-action="like" 
                 data-size="small"
                 data-show-faces="false" 
                 data-share="true"></div>
-
-            <footer>&copy; {{copyrightYear}} Meadowlark Travel</footer>           
         </div>
+
+        <footer>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="pull-right">
+                        &copy; {{copyrightYear}} Meadowlark Travel
+                    </div>                    
+                </div>
+            </div>            
+        </footer>
         
         {{!--jquery section block--}}
         <script src="//code.jquery.com/jquery-3.1.1.min.js"></script>        
@@ -90,7 +103,29 @@
             var IMG_CART_EMPTY = '{{static '/img/shop/cart_empty.png'}}';
             var IMG_CART_FULL = '{{static '/img/shop/cart_full.png'}}';
 
-            $(document).on('meadowlart_cart_changed', function(){
+            // simple client-side cart implementation (mostly mocked for now)
+			var cart = (function() {
+				// normally we would get this from an AJAX call, or some similar method
+				var items = Array({{cartItems}});
+				return {
+					items: items,
+					isEmpty: function() {
+						return !items.length;
+					},
+					addItem: function(id) {
+						items.push(id);
+						$(document).trigger('meadowlark_cart_changed');
+					},
+                    clearItems: function(){
+                        while(items.length){
+                            items.pop();
+                            $(document).trigger('meadowlark_cart_changed');
+                        }
+                    },
+				};
+			})();
+
+            $(document).on('meadowlark_cart_changed', function(){
                 $('header img.cartIcon').attr('src', cart.isEmpty() ? IMG_CART_EMPTY : IMG_CART_FULL);
             });
         </script>

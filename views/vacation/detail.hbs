@@ -1,0 +1,25 @@
+<h3>{{vacation.name}}</h3>
+<img src="{{static vacation.mainImgPath}}" alt="{{vacation.name}}">
+<p>{{vacation.description}}</p>
+<p><span class="price">{{vacation.price}}</span></p>
+<hr>
+{{#if vacation.inSeason}}
+    <div class="formContainer">
+        <form role="form" action="/cart/add" method="POST" class="form-inline">
+            <input type="hidden" name="_csrf" value="{{_csrfToken}}">
+            <input type="hidden" name="sku" value="{{vacation.sku}}">
+            <div class="form-group">
+                <label class="sr-only" for="fieldGuests">Number of guests in your party</label>
+                <div class="input-group">
+                    <div class="input-group-addon">Number of guests</div>
+                    <input type="number" class="form-control" id="fieldGuests" name="guests">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
+    </div>
+    <p><a class="requestGroupRate" href="/vacation/{{vacation.slug}}/request-group-rate">Request group rate.</a></p>
+{{else}}
+    <span class="outOfSeason">We're sorry this vacation is currently not in season</span><br>
+    <a href="/vacation/notify-in-season?sku={{vacation.sku}}">Notify me when this vacation is in season.</a>
+{{/if}}

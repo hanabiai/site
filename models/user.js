@@ -3,6 +3,7 @@ var userSchema = mongoose.Schema({
     authId: String,
     name: String,
     email: String,
+    provider: String,
     role: String,
     created: Date,
 });

@@ -9,6 +9,7 @@ var http = require('http'),
     path = require('path'),
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
+        extname: '.hbs',
         helpers: {
             section: function(name, options){
                 if(!this._sections) this._sections = {};
@@ -18,25 +19,21 @@ var http = require('http'),
             static: function(name){
                 return require('./lib/static.js').map(name);
             },
-        }
+        },
+        partialsDir: [
+            'views/partials/',
+        ],
     });
 
-app.engine('handlebars', handlebars.engine);
-app.set('view engine', 'handlebars');
+app.engine('hbs', handlebars.engine);
+app.set('view engine', 'hbs');
 app.set('port', process.env.PORT || 5000);
 
-var expressSession = require('express-session'),    
-    mongoose = require('mongoose'),
-    MongoStore = require('connect-mongo')(expressSession),             
-    static = require('./lib/static.js').map,
-    weatherInfo = require('./lib/weather.js')(),
-    twitter = require('./lib/twitter.js')({
-        consumerKey: process.env.TWITTER_API_CONSUMERKEY,
-        consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
-    }),    
-    geocode = require('./lib/geocode.js')();
-
 // configure database for mongoose
+var session = require('express-session'),    
+    mongoose = require('mongoose'),
+    MongoStore = require('connect-mongo')(session);
+
 var opts = {
     server: {
         socketOptions: { keepAlive: 1 }
@@ -53,6 +50,15 @@ switch(app.get('env')){
     default:
         throw new Error('Unknown execution environment: ' + app.get('env'));
 }
+
+var static = require('./lib/static.js').map,
+    weatherInfo = require('./lib/weather.js')(),
+    vacationInfo = require('./lib/vacation.js')(),
+    twitter = require('./lib/twitter.js')({
+        consumerKey: process.env.TWITTER_API_CONSUMERKEY,
+        consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
+    }),    
+    geocode = require('./lib/geocode.js')();
 
 /* ==========================================================================
     app's middleware configuration
@@ -121,11 +127,10 @@ app.use(function(req, res, next){
     next();
 });
 
-app
-    .use(express.static(path.join(__dirname,'public'), { maxAge: 31536000000 }))
+app.use(express.static(path.join(__dirname,'public'), { maxAge: 31536000000 }))
     .use(require('body-parser').urlencoded({ extended: true }))
     .use(require('cookie-parser')(process.env.COOKIE_SECRET))
-    .use(expressSession({
+    .use(session({
         resave: false,
         saveUninitialized: false,
         secret: process.env.COOKIE_SECRET,
@@ -157,6 +162,9 @@ app
     })
     // middleware to provide cart data for header
     .use(function(req, res, next) {
+        
+        res.locals.user = req.user;
+        
         var cart = req.session.cart;
         res.locals.cartItems = cart && cart.items ? cart.items.length : 0;
         next();
@@ -165,6 +173,13 @@ app
     .use(function(req, res, next){        
         if(!res.locals.partials) res.locals.partials = {};
         res.locals.partials.weatherContext = weatherInfo.getWeatherData();
+        
+        next();
+    })
+    // middleware to add top 3 data of vacations to context
+    .use(function(req, res, next){
+        if(!res.locals.vacations) res.locals.vacations = [];
+        res.locals.vacations = vacationInfo.getTopVacation();
         next();
     })
     // mmiddleware to add top tweets to context
@@ -202,28 +217,34 @@ var vhost = require('vhost'),
     adminRouter = express.Router(),
     apiRouter = express.Router();
 
-app
-    .use(vhost('admin.*', adminRouter))
+app.use(vhost('admin.*', adminRouter))
     .use(vhost('api.*', apiRouter));
 
 // add routes for admin
-require('./routes-admin.js')(adminRouter);
+require('./routes/admin.js')(adminRouter);
 
 // add routes for api
-require('./routes-api.js')(apiRouter);
+require('./routes/api.js')(apiRouter);
 
 // add routes for end-user
-require('./routes.js')(app);
+require('./routes/user.js')(app);
 
 
 // use middleware for 404, 500 error page
-app
-    .use(function(req, res, next){    
-        res.status(404).render('404');
+app.use(function(req, res, next){    
+        res.status(404).render('404', { flash: {
+            type: 'danger',
+            intro: 'Oops!',
+            message: 'Page not exist. plz check url.',
+        }});
     })
     .use(function(err, req, res, next){
         console.error(err.stack);
-        res.status(500).render('500');
+        res.status(500).render('500', { flash: {
+            type: 'danger',
+            intro: 'Oops!',
+            message: 'Internal error invoked. plz try later.',
+        }});
     });
 
 /* ==========================================================================

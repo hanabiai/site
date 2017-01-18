@@ -1,5 +1,4 @@
-var fortune = require('../lib/fortune.js'),
-    NewsletterSignup = require('../lib/mock-newsletter.js'),
+var NewsletterSignup = require('../models/mock-newsletter.js'),
     utility = require('../lib/utility.js');
 
 module.exports = {    
@@ -8,15 +7,8 @@ module.exports = {
         res.render('home');
     },
     
-    about: function(req, res){              
-        res.render('about', { 
-            fortune : fortune.getFortune(),
-            pageTestScript : '/qa/tests-about.js' 
-        });
-    },
-    
     newsletter: function(req, res){
-        res.render('newsletter');
+        res.render('newsletter/subscribe');
     },
     
     newsletterProcessPost: function(req, res){
