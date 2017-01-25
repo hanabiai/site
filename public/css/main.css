@@ -1,6 +1,37 @@
 /* ==========================================================================
-   custom styles
+   Custom Global Styles
    ========================================================================== */
+/* Global Layout */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+header {
+  position: relative;
+  width: 100%;
+  height: 30px;
+}
+nav {
+  position: relative;
+  width: 100%;
+  height: 186px;
+}
+section {
+  margin: -216px 0 -28px;
+  width: 100%;
+  min-height: 100%;
+}
+section #content {
+  padding-top: 216px;
+  padding-bottom: 28px;
+}
+footer {
+  width: 100%;
+  height: 28px;
+}
+/* Global Style */
 body {
   background-image: url("/img/background.png");
 }
@@ -26,13 +57,6 @@ a.currency {
 .dealers #map {
   width: 100%;
   height: 400px;
-}
-.content {
-  width: 80%;
-}
-.sidebar {
-  font-size: 12px;
-  vertical-align: top;
 }
 .twitter-tweet {
   font-size: 12px;

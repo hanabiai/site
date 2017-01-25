@@ -17,7 +17,7 @@
 
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" href="{{static '/css/meadowlark.min.f7ea0c59.css'}}">
+        <link rel="stylesheet" href="{{static '/css/meadowlark.min.147423d6.css'}}">
     </head>
     <body>
         {{!--google analytics--}}
@@ -50,6 +50,11 @@
                         <div class="pull-right"><a href="/login" class="btn btn-default btn-xs">Login</a></div>
                     {{/if}}
                 </div>
+            </div>
+        </header>
+        
+        <nav>
+            <div class="container-fluid">
                 <div class="row">
                     <div class="pull-left">
                         <img src="{{logoImage}}" alt="Meadowlark Travel Logo">
@@ -62,34 +67,36 @@
                     {{/if}}                    
                 </div>
             </div>
-        </header>
+        </nav>
 
-        <div class="container">
-            {{#if flash}}
-                <div class="alert alert-dismissible alert-{{flash.type}}">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                    <strong>{{flash.intro}}</strong> {{{flash.message}}}
-                </div>
-            {{/if}}
+        <section>
+            <div id="content" class="container-fluid">
+                {{#if flash}}
+                    <div class="alert alert-dismissible alert-{{flash.type}}">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                        <strong>{{flash.intro}}</strong> {{{flash.message}}}
+                    </div>
+                {{/if}}
 
-            This site is opened for testing with personal purpose <b>MongoDB, Express, Angular, Node.js</b>
-            ... For now, under construction.
+                This site is opened for testing with personal purpose <b>MongoDB, Express, Angular, Node.js</b>
+                ... For now, under construction.
 
-            {{{body}}}
-
-            <div 
-                class="fb-like v-margin" 
-                data-href="https://meadowlarktravelco.herokuapp.com/" 
-                data-layout="standard" 
-                data-action="like" 
-                data-size="small"
-                data-show-faces="false" 
-                data-share="true"></div>
-        </div>
+                {{{body}}}
+                
+            </div>
+        </section>
 
         <footer>
             <div class="container-fluid">
                 <div class="row">
+                    <div 
+                        class="fb-like" 
+                        data-href="https://meadowlarktravelco.herokuapp.com/" 
+                        data-layout="button" 
+                        data-action="like" 
+                        data-size="small"
+                        data-show-faces="false" 
+                        data-share="true"></div>
                     <div class="pull-right">
                         &copy; {{copyrightYear}} Meadowlark Travel
                     </div>                    
@@ -126,7 +133,7 @@
 			})();
 
             $(document).on('meadowlark_cart_changed', function(){
-                $('header img.cartIcon').attr('src', cart.isEmpty() ? IMG_CART_EMPTY : IMG_CART_FULL);
+                $('nav img.cartIcon').attr('src', cart.isEmpty() ? IMG_CART_EMPTY : IMG_CART_FULL);
             });
         </script>
 

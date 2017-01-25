@@ -128,8 +128,8 @@ app.use(function(req, res, next){
 });
 
 app.use(express.static(path.join(__dirname,'public'), { maxAge: 31536000000 }))
-    .use(require('body-parser').urlencoded({ extended: true }))
     .use(require('cookie-parser')(process.env.COOKIE_SECRET))
+    .use(require('body-parser').urlencoded({ extended: true }))    
     .use(session({
         resave: false,
         saveUninitialized: false,
@@ -161,10 +161,7 @@ app.use(express.static(path.join(__dirname,'public'), { maxAge: 31536000000 }))
         next();
     })
     // middleware to provide cart data for header
-    .use(function(req, res, next) {
-        
-        res.locals.user = req.user;
-        
+    .use(function(req, res, next) {        
         var cart = req.session.cart;
         res.locals.cartItems = cart && cart.items ? cart.items.length : 0;
         next();

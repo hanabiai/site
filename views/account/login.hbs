@@ -11,10 +11,21 @@
     </div>
     <div class="row">
         <div class="col-xs-offset-1 col-xs-10">
-            <p><a href="/auth/facebook" role="button" class="btn btn-primary btn-lg btn-block">Facebook</a></p>            
+            <p><a href="/auth/facebook?redirect={{redirect}}" role="button" class="btn btn-primary btn-lg btn-block">Facebook</a></p>
         </div>
         <div class="col-xs-offset-1 col-xs-10">
-            <p><a href="/auth/google" role="button" class="btn btn-warning btn-lg btn-block">Google</a></p>
+            <p><a href="/auth/google?redirect={{redirect}}" role="button" class="btn btn-warning btn-lg btn-block">Google</a></p>
         </div>
     </div>
 </div>
+
+{{!--{{#section 'jquery'}}
+    <script>
+        $(document).ready(function(){
+            $('a').attr('href', function(i, val){
+                var url = new URL(document.referrer);
+                return val + '?redirect=' + encodeURIComponent(url.pathname);
+            });
+        });
+    </script>
+{{/section}}--}}

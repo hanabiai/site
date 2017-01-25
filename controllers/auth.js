@@ -1,3 +1,4 @@
+var url = require('url');
 
 module.exports = {
 
@@ -6,6 +7,8 @@ module.exports = {
 
         isAuthenticated: function(req, res, next){
             if(req.isAuthenticated()) return next();
+            var redirect = url.parse(req.url).pathname;
+            req.session.redirect = encodeURIComponent(redirect);
             res.redirect(303, '/login');
         },
 
@@ -36,17 +39,15 @@ module.exports = {
 
     },
     
-    login: function(req, res){        
-        res.render('account/login' );
+    login: function(req, res){
+        var redirect = req.session.redirect;
+        if(redirect) delete req.session.redirect;        
+        res.render('account/login', { redirect: redirect } );
     },
 
     logout: function(req, res){
-        req.session.destroy(function(){
-            //req.logout();
-        });
-        process.nextTick(function () {                
-            console.log(req.user);
-        });        
+        //req.logout();
+        req.session.destroy(function(){});        
         res.redirect(303, '/' );
     },
 
@@ -56,14 +57,14 @@ module.exports = {
     },
 
     unauthentication: function(req, res){
-        res.status(403).render('account/unauthentication', { 
+        res.status(401).render('account/unauthentication', { 
             redirect: '/' + req.headers.referer.split('/').slice(3).join('/')
         });
     },
 
     // customer routes
     account: function(req, res){              
-        res.render('account/account', { user: req.user });
+        res.render('account/account');
     },
 
     orderHistory: function(req, res){

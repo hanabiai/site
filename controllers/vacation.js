@@ -5,11 +5,11 @@ var Vacation = require('../models/vacation.js'),
 module.exports = {
     
     detail: function(req, res, next){
-        Vacation.findOne({ slug: req.params.vacation }, function(err, vacation){
+        Vacation.findOne({ slug: req.params.slug }, function(err, vacation){
             var currency = req.session.currency || 'USD';
             if(err) return next(err);
             if(!vacation) return next();
-            vacation.mainImgPath = '/img/vacation/' + req.params.vacation + '.jpg';
+            vacation.mainImgPath = '/img/vacation/' + req.params.slug + '.jpg';
             vacation.price = utility.convertFromUSD(vacation.priceInCents, currency);
             res.render('vacation/detail', { vacation: vacation });
         });
@@ -75,7 +75,13 @@ module.exports = {
 	},
 	
 	requestGroupRateProcessPost: function(req, res, next){
-		next(new Error('Request group rate processing not yet implemented!'));
+        req.session.flash = {
+            type: 'success',
+            intro: 'Thank u!',
+            message: 'U will be notified via email : ' + req.body.email,
+        };
+        var redirect = '/vacation/' + req.params.slug;
+        return res.redirect(303, redirect);
 	},
 
 };

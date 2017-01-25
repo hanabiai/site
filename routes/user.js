@@ -25,11 +25,11 @@ module.exports = function(app){
 
         // vacation routes
         .get('/vacation', vacation.home)
-        .get('/vacation/:vacation', vacation.detail)        
+        .get('/vacation/:slug', vacation.detail)        
         .get('/vacation/notify-in-season', vacation.notifyInSeason)
         .post('/vacation/notify-in-season', vacation.notifyInSeasonProcessPost)
-        .get('/vacation/:vacation/request-group-rate', vacation.requestGroupRate)
-        .post('/vacation/:vacation/request-group-rate', vacation.requestGroupRateProcessPost)
+        .get('/vacation/:slug/request-group-rate', vacation.requestGroupRate)
+        .post('/vacation/:slug/request-group-rate', vacation.requestGroupRateProcessPost)
 
         // shopping cart routes
         .get('/cart', cart.middleware, cartValidation.checkWaivers, cartValidation.checkGuestCounts, cart.home)
