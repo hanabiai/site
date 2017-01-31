@@ -1,44 +1,31 @@
 var Vacation = require('../models/vacation.js'),
     VacationInSeasonListener = require('../models/vacationInSeasonListener.js'),
+    vacationInfo = require('../lib/vacation.js');
     utility = require('../lib/utility.js');
 
 module.exports = {
     
     detail: function(req, res, next){
-        Vacation.findOne({ slug: req.params.slug }, function(err, vacation){
-            var currency = req.session.currency || 'USD';
+        Vacation.findOne({ slug: req.params.slug }, function(err, vacation){            
             if(err) return next(err);
             if(!vacation) return next();
+
+            var currency = req.session.currency || 'usd';
             vacation.mainImgPath = '/img/vacation/' + req.params.slug + '.jpg';
             vacation.price = utility.convertFromUSD(vacation.priceInCents, currency);
             res.render('vacation/detail', { vacation: vacation });
         });
     },
     
-    home: function(req, res){
-        Vacation.find({ available: true }).sort({ _id: -1 }).exec(function(err, vacations){
-            var currency = req.session.currency || 'USD';
-            var context = {
-                currency: currency,
-                vacations: vacations.map(function(vacation){
-                    return {
-                        sku: vacation.sku,
-                        name: vacation.name,
-                        slug: vacation.slug, 
-                        description: vacation.description,
-                        price: utility.convertFromUSD(vacation.priceInCents, currency),
-                        inSeason: vacation.inSeason,
-                        qty: vacation.qty,
-                    };
-                })
-            };
-            switch(currency){
-                case 'USD': context.currencyUSD = 'selected'; break;
-                case 'GBP': context.currencyGBP = 'selected'; break;
-                case 'BTC': context.currencyBTC = 'selected'; break;
-            }
-            res.render('vacation/list', context);
-        });
+    home: function(req, res, next){
+        vacationInfo.getVacation(5, req, res, next).then(function(vacationContext){
+            switch(vacationContext.currency){
+                case 'usd': vacationContext.currencyUSD = 'selected'; break;
+                case 'gbp': vacationContext.currencyGBP = 'selected'; break;
+                case 'btc': vacationContext.currencyBTC = 'selected'; break;
+            }            
+            res.render('vacation/list', vacationContext);
+        });        
     },
     
     notifyInSeason: function(req, res){

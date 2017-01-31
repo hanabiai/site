@@ -8,22 +8,25 @@
     <input type="hidden" name="_csrf" value="{{_csrfToken}}">
     <input type="hidden" name="referer">
     <input type="hidden" name="slug" value="{{slug}}">
-    <div class="form-group">
+    <div class="form-group has-feedback">
         <label for="fieldName" class="col-xs-2 control-label">Name:</label>
         <div class="col-xs-10">
-            <input type="text"  class="form-control" id="fieldName" name="fieldName">
+            <input type="text"  class="form-control" id="fieldName" name="fieldName" required>
+            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
     </div>
-    <div class="form-group">
+    <div class="form-group has-feedback">
         <label for="groupSize" class="col-xs-2 control-label">Group size:</label>
         <div class="col-xs-10">
-            <input type="text"  class="form-control" id="groupSize" name="groupSize">
+            <input type="text"  class="form-control" id="groupSize" name="groupSize" placeholder="number of guests" required>
+            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
     </div>
-    <div class="form-group">
+    <div class="form-group has-feedback">
         <label for="email" class="col-xs-2 control-label">Email:</label>
         <div class="col-xs-10">
-            <input type="email"  class="form-control" id="email" name="email">
+            <input type="email"  class="form-control" id="email" name="email" placeholder="a@b.com" required>
+            <span class="glyphicon form-control-feedback" aria-hidden="true"></span>
         </div>
     </div>
     <div class="form-group">

@@ -1,7 +1,11 @@
 <h3>{{vacation.name}}</h3>
-<img src="{{static vacation.mainImgPath}}" alt="{{vacation.name}}">
+<img src="{{static vacation.mainImgPath}}" alt="{{vacation.name}}" class="img-thumbnail">
 <p>{{vacation.description}}</p>
-<p><span class="price">{{vacation.price}}</span></p>
+<p>
+    price: 
+    <span class="glyphicon glyphicon-{{currency}}" aria-hidden="true"></span> 
+    <span class="price">{{vacation.price}}</span>
+</p>
 <hr>
 {{#if vacation.inSeason}}
     <div class="formContainer">

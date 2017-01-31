@@ -3,7 +3,10 @@
     <li>
         <div class="vacation">
 			<div class="pull-right">
-				<p><span class="price">{{price}}</span></p>
+				<p>
+					<span class="glyphicon glyphicon-{{../currency}}" aria-hidden="true"></span>
+					<span class="price">{{price}}</span>
+				</p>
 			</div>
             <a href="/vacation/{{slug}}"><h4>{{name}}</h4></a>
             <p>{{description}}</p>            

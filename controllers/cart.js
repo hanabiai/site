@@ -20,7 +20,7 @@ module.exports = {
     middleware: function(req, res, next){
         var cart = req.session.cart;
         if(!cart || !cart.items) return next();
-        var currency = req.session.currency || 'USD';
+        var currency = req.session.currency || 'usd';
         req.cart = {
             items: cart.items.map(function(item){                
                 item.price = utility.convertFromUSD(item.vacation.priceInCents, currency);
@@ -56,7 +56,7 @@ module.exports = {
     },
     
     home: function(req, res, next){
-        var currency = req.session.currency || 'USD';                       
+        var currency = req.session.currency || 'usd';                       
         res.render('cart/list', { cart: req.cart, currency: currency });
     },
     
@@ -112,7 +112,7 @@ module.exports = {
     
     setCurrency: function(req, res){
         req.session.currency = req.params.currency;
-        return res.redirect(303, '/vacation/list');
+        return res.redirect(303, '/vacation');
     },
 
 };

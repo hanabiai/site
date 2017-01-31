@@ -1,10 +1,14 @@
 var NewsletterSignup = require('../models/mock-newsletter.js'),
+    vacationInfo = require('../lib/vacation.js'),
     utility = require('../lib/utility.js');
 
 module.exports = {    
 
-    home: function(req, res){                   
-        res.render('home');
+    home: function(req, res, next){
+        vacationInfo.getVacation(3, req, res, next).then(function(vacationContext){
+            res.render('home', vacationContext);
+        });
+        
     },
     
     newsletter: function(req, res){

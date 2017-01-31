@@ -4,8 +4,7 @@
 var http = require('http'),
     express = require('express'),
     app = express(),
-    fs = require('fs'),    
-    Q = require('q'),
+    fs = require('fs'),
     path = require('path'),
     handlebars = require('express-handlebars').create({
         defaultLayout:'main',
@@ -52,8 +51,7 @@ switch(app.get('env')){
 }
 
 var static = require('./lib/static.js').map,
-    weatherInfo = require('./lib/weather.js')(),
-    vacationInfo = require('./lib/vacation.js')(),
+    weatherInfo = require('./lib/weather.js')(),    
     twitter = require('./lib/twitter.js')({
         consumerKey: process.env.TWITTER_API_CONSUMERKEY,
         consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
@@ -169,14 +167,7 @@ app.use(express.static(path.join(__dirname,'public'), { maxAge: 31536000000 }))
     // middleware to add weather data to context
     .use(function(req, res, next){        
         if(!res.locals.partials) res.locals.partials = {};
-        res.locals.partials.weatherContext = weatherInfo.getWeatherData();
-        
-        next();
-    })
-    // middleware to add top 3 data of vacations to context
-    .use(function(req, res, next){
-        if(!res.locals.vacations) res.locals.vacations = [];
-        res.locals.vacations = vacationInfo.getTopVacation();
+        res.locals.partials.weatherContext = weatherInfo.getWeatherData();        
         next();
     })
     // mmiddleware to add top tweets to context
