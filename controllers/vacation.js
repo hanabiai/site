@@ -13,12 +13,12 @@ module.exports = {
             var currency = req.session.currency || 'usd';
             vacation.mainImgPath = '/img/vacation/' + req.params.slug + '.jpg';
             vacation.price = utility.convertFromUSD(vacation.priceInCents, currency);
-            res.render('vacation/detail', { vacation: vacation });
+            res.render('vacation/detail', { vacation: vacation, currency: currency });
         });
     },
     
-    home: function(req, res, next){
-        vacationInfo.getVacation(5, req, res, next).then(function(vacationContext){
+    home: function(req, res){
+        vacationInfo.getVacation(10, req, res).then(function(vacationContext){
             switch(vacationContext.currency){
                 case 'usd': vacationContext.currencyUSD = 'selected'; break;
                 case 'gbp': vacationContext.currencyGBP = 'selected'; break;

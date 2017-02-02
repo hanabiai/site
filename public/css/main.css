@@ -42,6 +42,7 @@ footer div.row:first-child {
   color: white;
 }
 li {
+  padding-top: 10px;
   border-top: solid 1px #ccc;
 }
 li:last-child {
@@ -58,13 +59,20 @@ a.currency {
   width: 100%;
   height: 400px;
 }
-.twitter-tweet {
-  font-size: 12px;
-}
 .v-margin {
   margin: 10px 0;
 }
 .v-center {
   display: inline-block;
   vertical-align: middle;
+}
+/* Library Fix Style */
+li.media {
+  margin-top: 0;
+}
+.media-left img {
+  width: 64px;
+}
+.twitter-tweet {
+  font-size: 12px;
 }

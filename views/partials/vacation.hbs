@@ -1,24 +1,25 @@
-<ul>
-    {{#each vacations}}
-    <li>
-        <div class="vacation">
+<ul class="media-list">
+    {{#each vacations}}	
+    <li class="media">
+		<div class="media-left">
+			<img class="media-object img-thumbnail" src="{{static imgPath}}" alt="{{name}}">
+		</div>
+		<div class="media-body">
 			<div class="pull-right">
-				<p>
-					<span class="glyphicon glyphicon-{{../currency}}" aria-hidden="true"></span>
-					<span class="price">{{price}}</span>
-				</p>
+				<span class="glyphicon glyphicon-{{../currency}}" aria-hidden="true"></span>
+				<span class="price">{{price}}</span>
 			</div>
-            <a href="/vacation/{{slug}}"><h4>{{name}}</h4></a>
-            <p>{{description}}</p>            
-            {{#if inSeason}}                
+			<a href="/vacation/{{slug}}"><h4 class="media-heading">{{name}}</h4></a>
+			<p>{{description}}</p>            
+			{{#if inSeason}}                
 				<p><a href="/cart/add" data-action="cart-add" data-sku="{{sku}}" class="btn btn-primary">Add to cart</a></p>
-            {{else}}
+			{{else}}
 				<p>
 					<span class="outOfSeason">We're sorry this vacation is currently not in season</span><br>
 					<a href="/notify-in-season?sku={{sku}}">Notify me when this vacation is in season.</a>
 				</p>
-            {{/if}}
-        </div>
+			{{/if}}
+		</div>
     </li>
     {{/each}}
 </ul>

@@ -4,8 +4,8 @@ var NewsletterSignup = require('../models/mock-newsletter.js'),
 
 module.exports = {    
 
-    home: function(req, res, next){
-        vacationInfo.getVacation(3, req, res, next).then(function(vacationContext){
+    home: function(req, res){
+        vacationInfo.getVacation(3, req, res).then(function(vacationContext){
             res.render('home', vacationContext);
         });
         
