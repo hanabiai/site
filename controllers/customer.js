@@ -1,9 +1,6 @@
 var Customer = require('../models/customer.js');
 var customerViewModel = require('../viewModels/customer.js');
 
-// initialize orders
-require('../models/mock-order.js')();
-
 module.exports = {
     
     register: function(req, res, next) {

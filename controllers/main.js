@@ -1,4 +1,4 @@
-var NewsletterSignup = require('../models/mock-newsletter.js'),
+var NewsletterSignup = require('../models/newsletter.js'),
     vacationInfo = require('../lib/vacation.js'),
     utility = require('../lib/utility.js');
 

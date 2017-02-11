@@ -22,41 +22,22 @@ var http = require('http'),
         partialsDir: [
             'views/partials/',
         ],
-    });
-
-app.engine('hbs', handlebars.engine);
-app.set('view engine', 'hbs');
-app.set('port', process.env.PORT || 5000);
-
-// configure database for mongoose
-var session = require('express-session'),    
-    mongoose = require('mongoose'),
-    MongoStore = require('connect-mongo')(session);
-
-var opts = {
-    server: {
-        socketOptions: { keepAlive: 1 }
-    }
-};
-mongoose.Promise = global.Promise;
-switch(app.get('env')){
-    case 'development':        
-        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
-        break;
-    case 'production':        
-        mongoose.connect(process.env.MONGOLAB_CONNSTRING, opts);
-        break;
-    default:
-        throw new Error('Unknown execution environment: ' + app.get('env'));
-}
-
-var static = require('./lib/static.js').map,
+    }),
+    session = require('express-session'),
+    MongoStore = require('connect-mongo')(session),
+    mongoose = require('./lib/connect-db.js')(),
+    static = require('./lib/static.js').map,
     weatherInfo = require('./lib/weather.js')(),    
     twitter = require('./lib/twitter.js')({
         consumerKey: process.env.TWITTER_API_CONSUMERKEY,
         consumerSecret: process.env.TWITTER_API_CONSUMERSECRET,
     }),    
     geocode = require('./lib/geocode.js')();
+
+
+app.engine('hbs', handlebars.engine);
+app.set('view engine', 'hbs');
+app.set('port', process.env.PORT || 5000);
 
 /* ==========================================================================
     app's middleware configuration

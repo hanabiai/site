@@ -11,7 +11,7 @@ module.exports = {
             if(!vacation) return next();
 
             var currency = req.session.currency || 'usd';
-            vacation.mainImgPath = '/img/vacation/' + req.params.slug + '.jpg';
+            vacation.imgPath = '/img/vacation/' + req.params.slug + '.jpg';
             vacation.price = utility.convertFromUSD(vacation.priceInCents, currency);
             res.render('vacation/detail', { vacation: vacation, currency: currency });
         });
